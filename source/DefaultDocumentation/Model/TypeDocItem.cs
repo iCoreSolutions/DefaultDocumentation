@@ -9,7 +9,19 @@ using ICSharpCode.Decompiler.TypeSystem;
 
 namespace DefaultDocumentation.Model
 {
-    internal abstract class TypeDocItem : DocItem, ITypeParameterizedDocItem
+   internal class AssemblyDocItem : DocItem
+   {
+      public AssemblyDocItem(DocItem parent, IEntity entity, XElement documentation) : base(parent, entity, documentation)
+      {
+      }
+
+      public override void WriteDocumentation(DocumentationWriter writer)
+      {
+         throw new NotImplementedException();
+      }
+   }
+
+   internal abstract class TypeDocItem : DocItem, ITypeParameterizedDocItem
     {
         private static readonly CSharpAmbience CodeAmbience = new CSharpAmbience
         {

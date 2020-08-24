@@ -4,9 +4,69 @@
         <name>Dummy</name>
     </assembly>
     <members>
+        <member name="T:Dummy.IDummyIfc">
+            <summary>
+            This is an interface.
+            </summary>
+        </member>
+        <member name="P:Dummy.IDummyIfc.DummyCls">
+            <summary>
+            This is a property in the interface.
+            </summary>
+        </member>
+        <member name="T:Dummy.MyDictionary">
+            <summary>
+            MyDict
+            </summary>
+        </member>
+        <member name="T:Dummy.SubDummy`1">
+            <summary>
+            SumDummy is a class deriving from a nested class.
+            </summary>
+            <remarks>
+            <para>This is the remarks for the <see cref="T:Dummy.SubDummy`1"/> class.</para>
+            <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
+            <para>And finally one last paragraph, with a <see cref="T:System.Collections.Generic.IEnumerable`1"/> (see) and also a <see langword="false"/>.</para>
+            </remarks>
+        </member>
+        <member name="P:Dummy.SubDummy`1.ValueTupleProp">
+            <summary>
+            This returns a value tuple.
+            </summary>
+        </member>
+        <member name="P:Dummy.SubDummy`1.TupleProp">
+            <summary>
+            This returns a normal tuple.
+            </summary>
+        </member>
+        <member name="M:Dummy.SubDummy`1.Method1(System.Int32)">
+            <summary>
+            This is a method with an example.
+            </summary>
+            <example>      
+            This example illustrates accessing this method.
+            <code>
+            SubDummy&lt;int&gt; a = new SumDummy&lt;int&gt;();
+            a.Method1(3);
+            </code>
+            </example>
+            <remarks>
+            <para>This is the remarks for the <see cref="T:Dummy.SubDummy`1"/> class.</para>
+            <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
+            <para>And finally one last paragraph, with a <see cref="T:System.Collections.Generic.IEnumerable`1"/> (see) and also a <see langword="false"/>.</para>
+            </remarks>
+            <exception cref="T:System.ArgumentException">Thrown when an argument is out of whack</exception>
+            <exception cref="T:System.ArgumentNullException">Thrown when an argument is out of whack</exception>
+            <seealso cref="T:Dummy.DummyClass.DummyNested`1"/>
+            <seealso cref="M:System.StringComparer.GetHashCode(System.String)"/>
+            <param name="a">This is the value to pass in to the function. It is called <c>a</c>.</param>
+            <returns>This method actually always returns <see langword="null"/>.</returns>
+        </member>
         <member name="T:Dummy.DummyClass">
             <summary>
-            dummy
+            Dummy class description. See <see cref="M:System.Linq.Enumerable.LastOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})"/>.
+            
+            Also try with <see cref="M:System.Linq.Enumerable.LastOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">LastOrDefault Specific Method</see>
             </summary>
         </member>
         <member name="T:Dummy.DummyClass.DummyNested`1">
@@ -20,13 +80,17 @@
             </summary>
             <typeparam name="T"></typeparam>
             <remarks>
-            pouet
+            pouet <see cref="P:System.StringComparer.CurrentCulture"/>
             </remarks>
         </member>
         <member name="E:Dummy.DummyClass.DummyNested`1.Action">
             <summary>
             dummy
             </summary>
+        </member>
+        <member name="P:Dummy.DummyClass.DummyCls">
+            <summary>Gets or sets the dummy cls. <see cref="T:System.String"/> and <see cref="T:DummyRef1.MyClassInDummy"/>.</summary>
+            <value>The dummy cls.</value>
         </member>
         <member name="F:Dummy.DummyClass.DummyField">
             <summary>
@@ -47,7 +111,7 @@
         </member>
         <member name="M:Dummy.DummyClass.DummyAsync``1(``0)">
             <summary>
-            dummy
+            dummy <see cref="P:Dummy.DummyClass.DummyProperty"/> and <see cref="T:System.Collections.Generic.IEnumerable`1"/>
             </summary>
             <typeparam name="T">dummy</typeparam>
             <param name="value">dummy</param>
@@ -273,6 +337,24 @@
             <param name="a">dummy</param>
             <param name="i">dummy</param>
             <returns>dummy</returns>
+        </member>
+        <member name="M:Dummy.DummyClass.Overloaded(System.String)">
+            <summary>
+            dummy
+            </summary>
+            <param name="s">dummy</param>
+        </member>
+        <member name="M:Dummy.DummyClass.Overloaded(System.Int32)">
+            <summary>
+            dummy
+            </summary>
+            <param name="s">dummy</param>
+        </member>
+        <member name="M:Dummy.DummyClass.Overloaded(System.Double,System.Int32)">
+            <summary>
+            dummy
+            </summary>
+            <param name="s">dummy</param>
         </member>
     </members>
 </doc>

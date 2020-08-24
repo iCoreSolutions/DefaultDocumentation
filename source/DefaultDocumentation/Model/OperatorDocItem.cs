@@ -8,7 +8,7 @@ using ICSharpCode.Decompiler.TypeSystem;
 namespace DefaultDocumentation.Model
 {
     internal sealed class OperatorDocItem : DocItem, IParameterizedDocItem
-    {
+    {      
         private static readonly CSharpAmbience CodeAmbience = new CSharpAmbience
         {
             ConversionFlags =

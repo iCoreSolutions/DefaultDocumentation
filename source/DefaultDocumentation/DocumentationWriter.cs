@@ -214,6 +214,7 @@ namespace DefaultDocumentation
                         "c" => $"`{element.Value}`",
                         "code" => $"```csharp\n{element.Value}\n```\n",
                         "para" => $"\n\n{WriteNodes(element.Nodes())}\n\n",
+                        "list" => "",
                         _ => element.ToString()
                     },
                     _ => throw new Exception($"unhandled node type in summary {node.NodeType}")

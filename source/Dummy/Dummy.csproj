@@ -9,4 +9,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DummyRef2\DummyRef2.csproj" />
+    <ProjectReference Include="..\DummyRef\DummyRef.csproj" />
+  </ItemGroup>
+
 </Project>
