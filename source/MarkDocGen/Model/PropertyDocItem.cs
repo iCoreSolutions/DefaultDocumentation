@@ -7,7 +7,7 @@ using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
-   internal sealed class PropertyDocItem : DocItem, IParameterizedDocItem
+   internal sealed class PropertyDocItem : EntityDocItem, IParameterizedDocItem
    {
       private static readonly CSharpAmbience CodeAmbience = new CSharpAmbience
       {
@@ -27,7 +27,7 @@ namespace DefaultDocumentation.Model
 
       public ParameterDocItem[] Parameters { get; }
 
-      public PropertyDocItem(TypeDocItem parent, IProperty property, XElement documentation)
+      public PropertyDocItem(DocItem parent, IProperty property, XElement documentation)
           : base(parent, property, documentation)
       {
          Property = property;
@@ -35,6 +35,8 @@ namespace DefaultDocumentation.Model
       }
 
       public override DocItemKind Kind => DocItemKind.Property;
+
+      public string Name => Property.Name;
 
       // TODO PP (2020-08-20): Remove commented code.
       //public override void WriteDocumentation(DocumentationWriter writer)

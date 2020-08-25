@@ -43,6 +43,8 @@ namespace MarkDocGen
          }
       }
 
+       TODO PP (2020-08-25): change RenderNodes to call into "StartParagraph" and "EndParagraph" or something... but.. hm... how do we handle the *content* of the paragraph then? .. Uhm.. we just started one... just continue rendering as normal.
+
       public string RenderNodes(RenderingContext context, IEnumerable<XNode> nodes)
       {
          if (nodes == null || !nodes.Any())

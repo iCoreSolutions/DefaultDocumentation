@@ -26,55 +26,6 @@ namespace Dummy
    }
 
    /// <summary>
-   /// SumDummy is a class deriving from a nested class.
-   /// </summary>
-   /// <remarks>
-   /// <para>This is the remarks for the <see cref="SubDummy{T}"/> class.</para>
-   /// <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
-   /// <para>And finally one last paragraph, with a <see cref="IEnumerable{T}"/> (see) and also a <see langword="false"/>.</para>
-   /// </remarks>
-   class SubDummy<T> : DummyClass.DummyNested<T>
-   {
-      /// <summary>
-      /// This returns a value tuple.
-      /// </summary>
-      public (int Apa, string Bepa) ValueTupleProp { get; }
-
-      /// <summary>
-      /// This returns a normal tuple.
-      /// </summary>
-      public Tuple<int, string> TupleProp { get; }
-
-
-      /// <summary>
-      /// This is a method with an example.
-      /// </summary>
-      /// <example>      
-      /// This example illustrates accessing this method.
-      /// <code>
-      /// SubDummy&lt;int&gt; a = new SumDummy&lt;int&gt;();
-      /// a.Method1(3);
-      /// </code>
-      /// </example>
-      /// <remarks>
-      /// <para>This is the remarks for the <see cref="SubDummy{T}"/> class.</para>
-      /// <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
-      /// <para>And finally one last paragraph, with a <see cref="IEnumerable{T}"/> (see) and also a <see langword="false"/>.</para>
-      /// </remarks>
-      /// <exception cref="ArgumentException">Thrown when an argument is out of whack</exception>
-      /// <exception cref="ArgumentNullException">Thrown when an argument is out of whack</exception>
-      /// <seealso cref="DummyClass.DummyNested{T}"/>
-      /// <seealso cref="StringComparer.GetHashCode(string)"/>
-      /// <param name="a">This is the value to pass in to the function. It is called <c>a</c>.</param>
-      /// <returns>This method actually always returns <see langword="null"/>.</returns>
-      public string Method1(int a)
-      {
-         return null;
-      }
-
-   }
-
-   /// <summary>
    /// Dummy class description. See <see cref="System.Linq.Enumerable.LastOrDefault{TSource}(System.Collections.Generic.IEnumerable{TSource}, Func{TSource, bool})"/>.
    /// 
    /// Also try with <see cref="Enumerable.LastOrDefault{TSource}(System.Collections.Generic.IEnumerable{TSource}, Func{TSource, bool})">LastOrDefault Specific Method</see>
@@ -369,18 +320,33 @@ namespace Dummy
       /// dummy
       /// </summary>
       /// <param name="s">dummy</param>
+      /// <remarks>
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///</remarks>
       public void Overloaded(string s) { }
 
       /// <summary>
       /// dummy
       /// </summary>
       /// <param name="s">dummy</param>
+      /// <remarks>
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///</remarks>
       public void Overloaded(int i) { }
 
       /// <summary>
       /// dummy
       /// </summary>
       /// <param name="s">dummy</param>
+      /// <remarks>
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///<para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+      ///</remarks>
       public void Overloaded(double s, int a) { }
    }
 }

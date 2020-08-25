@@ -23,6 +23,9 @@ namespace MarkDocGen
       Property,
       Struct,
       TypeParameter,
-      MethodOverloadGroup
+      MethodOverloadGroup,
+      OperatorOverloadGroup,
+      ConstructorOverloadGroup,
+      PropertyOverloadGroup
    }
 }

@@ -30,10 +30,10 @@ namespace MarkDocGen
          {
             var current = CurrentItem;
 
-            while (current.Entity == null && current.Parent != null)
+            while (!(current is EntityDocItem) && current.Parent != null)
                current = current.Parent;
 
-            return current.Entity?.Compilation;
+            return (current as EntityDocItem)?.Entity.Compilation ?? ((current as AssemblyDocItem).Module)?.Compilation;
          }
       }
 
@@ -44,6 +44,29 @@ namespace MarkDocGen
       public RenderingContext WithItem(DocItem item)
       {
          return new RenderingContext(Generator, Template, item, FileNameStrategy, LinkResolver, Log);
+      }
+   }
+
+   static class RenderingContextExtensions
+   {
+      public static ILinkModel ResolveCrefLink(this RenderingContext context, string cref, string text = null)
+      {
+         return context.LinkResolver.ResolveCrefLink(context, cref, text);
+      }
+
+      public static ILinkModel ResolveTypeLink(this RenderingContext context, IType type, string text = null)
+      {
+         return context.LinkResolver.ResolveLink(context, type, text);
+      }
+
+      public static InternalLinkModel ResolveLink(this RenderingContext context, DocItem item, string text = null)
+      {
+         return context.LinkResolver.ResolveLink(context, item, text);
+      }
+
+      public static ILinkModel ResolveLangWordLink(this RenderingContext context, string langword)
+      {
+         return context.LinkResolver.ResolveLangWordLink(context, langword);
       }
    }
 }

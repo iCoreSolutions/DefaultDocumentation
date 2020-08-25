@@ -31,7 +31,7 @@ namespace DefaultDocumentation.Model
           : base(parent, method, documentation)
       {
       }
-
+      
       //public override void WriteDocumentation(DocumentationWriter writer)
       //{
       //    writer.WriteHeader();

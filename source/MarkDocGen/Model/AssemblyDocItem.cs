@@ -11,7 +11,7 @@ namespace DefaultDocumentation.Model
    internal class AssemblyDocItem : DocItem
    {
       public AssemblyDocItem(DocProject project, DocItem parent, IModule module, XElement documentation) 
-         : base(project, parent, "A:" + module.AssemblyName, module.AssemblyName, module.AssemblyName, documentation)
+         : base(project, parent, "A:" + module.AssemblyName, documentation)
       {
          Module = module;
       }

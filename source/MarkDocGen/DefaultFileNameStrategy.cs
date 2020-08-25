@@ -25,6 +25,12 @@ namespace MarkDocGen
           ["]"] = "-",
           ["&lt;"] = "-",
           ["&gt;"] = "-",
+          ["("] = "_",
+          [")"] = "_",
+          ["<"] = "_",
+          [">"] = "_",
+          ["#"] = "_",
+          ["`"] = "_",          
        };
 
       public string GetFileName(DocItem item)
@@ -36,19 +42,20 @@ namespace MarkDocGen
 
       public string Extension => ".md";
 
-      private IEnumerable<string> GetHierarchy(DocItem item)
-      {
-         // TODO PP (2020-08-20): verify this... GetName does some stuff with operators
-         yield return item.SimpleName;// GetName(_entity, NameAmbience);
+      // TODO PP (2020-08-25): Remove commented code.
+      //private IEnumerable<string> GetHierarchy(DocItem item)
+      //{
+      //   // TODO PP (2020-08-20): verify this... GetName does some stuff with operators
+      //   yield return item.SimpleName;// GetName(_entity, NameAmbience);
 
-         DocItem parent = item.Parent;
-         while (parent is TypeDocItem)
-         {
-            yield return parent.SimpleName; // GetName(parent._entity, NameAmbience);
+      //   DocItem parent = item.Parent;
+      //   while (parent is TypeDocItem)
+      //   {
+      //      yield return parent.SimpleName; // GetName(parent._entity, NameAmbience);
 
-            parent = parent.Parent;
-         }
-      }
+      //      parent = parent.Parent;
+      //   }
+      //}
 
       private static string Clean(string value)
       {

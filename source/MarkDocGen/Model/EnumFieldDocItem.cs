@@ -4,7 +4,7 @@ using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
-   internal sealed class EnumFieldDocItem : DocItem
+   internal sealed class EnumFieldDocItem : EntityDocItem
    {
       public IField Field { get; }
 

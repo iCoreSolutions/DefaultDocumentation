@@ -19,49 +19,6 @@
             MyDict
             </summary>
         </member>
-        <member name="T:Dummy.SubDummy`1">
-            <summary>
-            SumDummy is a class deriving from a nested class.
-            </summary>
-            <remarks>
-            <para>This is the remarks for the <see cref="T:Dummy.SubDummy`1"/> class.</para>
-            <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
-            <para>And finally one last paragraph, with a <see cref="T:System.Collections.Generic.IEnumerable`1"/> (see) and also a <see langword="false"/>.</para>
-            </remarks>
-        </member>
-        <member name="P:Dummy.SubDummy`1.ValueTupleProp">
-            <summary>
-            This returns a value tuple.
-            </summary>
-        </member>
-        <member name="P:Dummy.SubDummy`1.TupleProp">
-            <summary>
-            This returns a normal tuple.
-            </summary>
-        </member>
-        <member name="M:Dummy.SubDummy`1.Method1(System.Int32)">
-            <summary>
-            This is a method with an example.
-            </summary>
-            <example>      
-            This example illustrates accessing this method.
-            <code>
-            SubDummy&lt;int&gt; a = new SumDummy&lt;int&gt;();
-            a.Method1(3);
-            </code>
-            </example>
-            <remarks>
-            <para>This is the remarks for the <see cref="T:Dummy.SubDummy`1"/> class.</para>
-            <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
-            <para>And finally one last paragraph, with a <see cref="T:System.Collections.Generic.IEnumerable`1"/> (see) and also a <see langword="false"/>.</para>
-            </remarks>
-            <exception cref="T:System.ArgumentException">Thrown when an argument is out of whack</exception>
-            <exception cref="T:System.ArgumentNullException">Thrown when an argument is out of whack</exception>
-            <seealso cref="T:Dummy.DummyClass.DummyNested`1"/>
-            <seealso cref="M:System.StringComparer.GetHashCode(System.String)"/>
-            <param name="a">This is the value to pass in to the function. It is called <c>a</c>.</param>
-            <returns>This method actually always returns <see langword="null"/>.</returns>
-        </member>
         <member name="T:Dummy.DummyClass">
             <summary>
             Dummy class description. See <see cref="M:System.Linq.Enumerable.LastOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})"/>.
@@ -339,22 +296,96 @@
             <returns>dummy</returns>
         </member>
         <member name="M:Dummy.DummyClass.Overloaded(System.String)">
-            <summary>
-            dummy
-            </summary>
-            <param name="s">dummy</param>
+             <summary>
+             dummy
+             </summary>
+             <param name="s">dummy</param>
+             <remarks>
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            </remarks>
         </member>
         <member name="M:Dummy.DummyClass.Overloaded(System.Int32)">
-            <summary>
-            dummy
-            </summary>
-            <param name="s">dummy</param>
+             <summary>
+             dummy
+             </summary>
+             <param name="s">dummy</param>
+             <remarks>
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            </remarks>
         </member>
         <member name="M:Dummy.DummyClass.Overloaded(System.Double,System.Int32)">
+             <summary>
+             dummy
+             </summary>
+             <param name="s">dummy</param>
+             <remarks>
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
+            </remarks>
+        </member>
+        <member name="T:Dummy.SubDummy.SomeNamespace.SubDummy`1">
             <summary>
-            dummy
+            SumDummy is a class deriving from a nested class.
             </summary>
-            <param name="s">dummy</param>
+            <remarks>
+            <para>This is the remarks for the <see cref="T:Dummy.SubDummy.SomeNamespace.SubDummy`1"/> class.</para>
+            <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
+            <para>And finally one last paragraph, with a <see cref="T:System.Collections.Generic.IEnumerable`1"/> (see) and also a <see langword="false"/>.</para>
+            </remarks>
+            <seealso cref="M:Dummy.SubDummy.SomeNamespace.SubDummy`1.#ctor(System.Tuple{System.Int32,System.String})"/>
+        </member>
+        <member name="P:Dummy.SubDummy.SomeNamespace.SubDummy`1.ValueTupleProp">
+            <summary>
+            This returns a value tuple.
+            </summary>
+            <value>The tuple value of Apa and Bepa... a bit weird.</value>
+        </member>
+        <member name="P:Dummy.SubDummy.SomeNamespace.SubDummy`1.TupleProp">
+            <summary>
+            This returns a normal tuple.
+            </summary>
+        </member>
+        <member name="M:Dummy.SubDummy.SomeNamespace.SubDummy`1.Method1(System.Int32)">
+            <summary>
+            This is a method with an example.
+            </summary>
+            <example>      
+            This example illustrates accessing this method.
+            <code>
+            SubDummy&lt;int&gt; a = new SumDummy&lt;int&gt;();
+            a.Method1(3);
+            </code>
+            </example>
+            <remarks>
+            <para>This is the remarks for the <see cref="T:Dummy.SubDummy.SomeNamespace.SubDummy`1"/> class.</para>
+            <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
+            <para>And finally one last paragraph, with a <see cref="T:System.Collections.Generic.IEnumerable`1"/> (see) and also a <see langword="false"/>.</para>
+            </remarks>
+            <exception cref="T:System.ArgumentException">Thrown when an argument is out of whack</exception>
+            <exception cref="T:System.ArgumentNullException">Thrown when an argument is out of whack</exception>
+            <seealso cref="T:Dummy.DummyClass.DummyNested`1"/>
+            <seealso cref="M:System.StringComparer.GetHashCode(System.String)"/>
+            <param name="a">This is the value to pass in to the function. It is called <c>a</c>.</param>
+            <returns>This method actually always returns <see langword="null"/>.</returns>
+        </member>
+        <member name="P:Dummy.SubDummy.SomeNamespace.SubDummy`1.Item(System.Int32)">
+            <summary>
+            some getter stuff
+            </summary>
+            <param name="i">the parameter i</param>
+            <returns>a value of something</returns>
+        </member>
+        <member name="P:Dummy.SubDummy.SomeNamespace.SubDummy`1.Item(System.String)">
+            <summary>
+            some setter stuff.
+            </summary>
+            <param name="s">the s parameter</param>
+            <value>The value of this property.</value>
         </member>
     </members>
 </doc>

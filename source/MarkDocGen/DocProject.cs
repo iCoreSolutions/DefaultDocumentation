@@ -20,6 +20,9 @@ using System.Xml.Linq;
 
 namespace MarkDocGen
 {
+   // TODO PP (2020-08-25): Fix anchors
+   // TODO PP (2020-08-25): Overload documentation support... <overload> element? Or just O:... but can't do summary with O: only.
+
    class DocProject
    {
       private class DocItemCollection : KeyedCollection<string, DocItem>
@@ -97,38 +100,60 @@ namespace MarkDocGen
                _ => throw new NotSupportedException()
             };
 
-            foreach (var group in type.Methods.GroupBy(m => m.Name))
+            foreach (var group in type.Methods.Cast<IEntity>().Concat(type.Properties).GroupBy(m => m.Name))
             {
-               List<MethodBaseDocItem> methods = new List<MethodBaseDocItem>();
-               MethodOverloadGroupDocItem groupDocItem = new MethodOverloadGroupDocItem(typeDocItem, group.First().FullName, group.First().Name, XElement.Parse("<doc />"));
-
-               foreach (var entity in group)
+               if (group.Count() == 1)
                {
-                  if (TryGetDocumentation(entity, out documentation))
-                  {
-                     showType = true;
-
-                     MethodBaseDocItem item = entity switch
-                     {
-                        IMethod method when method.IsConstructor => new ConstructorDocItem(groupDocItem, method, documentation),
-                        IMethod method when method.IsOperator => new OperatorDocItem(groupDocItem, method, documentation),
-                        IMethod method => new MethodDocItem(groupDocItem, method, documentation),
-                        _ => throw new NotSupportedException()
-                     };
-
-                     methods.Add(item);
-                  }
+                  var entity = group.First();
+                  // TODO PP (2020-08-25): warn if doc missing for visible member, and add filter
+                  TryGetDocumentation(entity, out var doc);
+                  var methodItem = CreateItem(doc, typeDocItem, entity);
+                  showType = true;
+                  _docItems.Add(methodItem);
                }
-
-               if (methods.Count > 0)
+               else
                {
-                  _docItems.Add(groupDocItem);
-                  foreach (var method in methods)
-                     _docItems.Add(method);
+                  OverloadGroupDocItem groupDocItem;
+
+                  // TODO PP (2020-08-25): Add parsing of overload documentation.
+
+                  IEntity firstItem = group.First();
+                  if (firstItem is IMethod method)
+                  {
+                     if (method.IsConstructor)
+                        groupDocItem = new ConstructorOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
+                     else if (method.IsOperator)
+                        groupDocItem = new OperatorOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
+                     else
+                        groupDocItem = new MethodOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
+                  }
+                  else if (firstItem is IProperty property)
+                  {
+                     groupDocItem = new PropertyOverloadGroupDocItem(typeDocItem, property.FullName, firstItem.Name, XElement.Parse("<doc />"));
+                  }
+                  else
+                  {
+                     throw new InvalidOperationException($"Internal error; Unsupported overloaded member of type {firstItem.GetType().Name}");
+                  }
+
+                  List <DocItem> members = new List<DocItem>();
+                  foreach (var entity in group)
+                  {
+                     // TODO PP (2020-08-25): warn if doc missing for visible member, and add filter
+                     TryGetDocumentation(entity, out documentation);
+                     showType = true;
+                     var item = CreateItem(documentation, groupDocItem, entity);
+
+                     members.Add(item);
+                  }
+
+                  _docItems.Add(groupDocItem);                  
+                  foreach (var member in members)
+                     _docItems.Add(member);
                }
             }
 
-            foreach (IEntity entity in Enumerable.Empty<IEntity>().Concat(type.Fields).Concat(type.Properties).Concat(type.Events))
+            foreach (IEntity entity in Enumerable.Empty<IEntity>().Concat(type.Fields).Concat(type.Events))
             {
                if (TryGetDocumentation(entity, out documentation))
                {
@@ -138,7 +163,6 @@ namespace MarkDocGen
                   {
                      IField field when typeDocItem is EnumDocItem enumDocItem => new EnumFieldDocItem(enumDocItem, field, documentation),
                      IField field => new FieldDocItem(typeDocItem, field, documentation),
-                     IProperty property => new PropertyDocItem(typeDocItem, property, documentation),
                      IEvent @event => new EventDocItem(typeDocItem, @event, documentation),
                      _ => throw new NotSupportedException()
                   };
@@ -156,6 +180,18 @@ namespace MarkDocGen
 
                _docItems.Add(typeDocItem);
             }
+         }
+
+         static DocItem CreateItem(XElement documentation, DocItem parent, IEntity entity)
+         {
+            return entity switch
+            {
+               IMethod method when method.IsConstructor => new ConstructorDocItem(parent, method, documentation),
+               IMethod method when method.IsOperator => new OperatorDocItem(parent, method, documentation),
+               IMethod method => new MethodDocItem(parent, method, documentation),
+               IProperty property => new PropertyDocItem(parent, property, documentation),
+               _ => throw new NotSupportedException()
+            };
          }
       }
 

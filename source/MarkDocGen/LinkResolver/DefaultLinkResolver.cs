@@ -13,62 +13,30 @@ using ICSharpCode.Decompiler.TypeSystem.Implementation;
 
 namespace MarkDocGen
 {
-   static class RenderingContextExtensions
-   {
-      public static ILinkModel ResolveCrefLink(this RenderingContext context, string cref, string text = null)
-      {
-         return context.LinkResolver.ResolveCrefLink(context, cref, text);
-      }
-
-      public static ILinkModel ResolveTypeLink(this RenderingContext context, IType type, string text = null)
-      {
-         return context.LinkResolver.ResolveLink(context, type, text);
-      }
-
-      public static InternalLinkModel ResolveLink(this RenderingContext context, DocItem item, string text = null)
-      {         
-         return context.LinkResolver.ResolveLink(context, item, text);
-      }
-
-      public static ILinkModel ResolveLangWordLink(this RenderingContext context, string langword)
-      {
-         return context.LinkResolver.ResolveLangWordLink(context, langword);
-      }
-   }
-
-   interface ILinkResolver
-   {
-      ILinkModel ResolveCrefLink(RenderingContext context, string cref, string text);
-      ILinkModel ResolveLangWordLink(RenderingContext context, string langword);
-      InternalLinkModel ResolveLink(RenderingContext context, DocItem item, string text);
-      ILinkModel ResolveLink(RenderingContext context, IType type, string text);
-   }
-
-   class LinkResolver : ILinkResolver
+   class DefaultLinkResolver : ILinkResolver
    {
       private IFileNameStrategy m_fileNameStrategy;
 
-      public LinkResolver(IFileNameStrategy fileNameStrategy)
+      public DefaultLinkResolver(IFileNameStrategy fileNameStrategy)
       {
          m_fileNameStrategy = fileNameStrategy;
       }
+
       public InternalLinkModel ResolveLink(RenderingContext context, DocItem item, string text)
       {
          if (context.Template.GeneratesPage(item))
          {
             var fileName = m_fileNameStrategy.GetFileName(item);
-            return new InternalLinkModel(text ?? item.Name, fileName, null);
+            return new InternalLinkModel(text ?? context.Template.GetDisplayName(item), fileName, null);
          }
          else
          {
-            var pageItem = FindParentPage(context.Template, item);
+            var pageItem = FindParentPage(context, item);
             var fileName = "./" + m_fileNameStrategy.GetFileName(pageItem);
-            // TODO PP (2020-08-21): Should have an anchor property or sanitized ID!.
-            return new InternalLinkModel(text ?? item.Name, fileName, IdStringToUrlAnchor(item.Entity?.GetIdString() ?? "BUG"));
+            return new InternalLinkModel(text ?? context.Template.GetDisplayName(item), fileName, item.AnchorId);
          }
       }
 
-      // TODO PP (2020-08-21): Should return a "multi-link" (i.e. link to type arguments as well), and handle tuples pointers arrays etc.
       public ILinkModel ResolveLink(RenderingContext context, IType type, string text = null)
       {
          ILinkModel HandleGenericType(ParameterizedType genericType)
@@ -107,40 +75,24 @@ namespace MarkDocGen
             // TODO PP (2020-08-24): We may want to handle value tuples here. New LinkModel to render as eg. (string Foo, int Bar) instead of ValueTuple<string, int>
             List<ILinkModel> typeArguments = new List<ILinkModel>();
             for (int i = 0; i < tupleType.ElementTypes.Length; i++)
-            {               
+            {
                typeArguments.Add(ResolveLink(context, tupleType.ElementTypes[i]));
             }
 
             return new TypeLinkModel(baseLink, typeArguments, null);
          }
 
-         // TODO PP (2020-08-21): add support for external link definitions perhaps?
-         //if (context.Project.Items.TryGetValue(type.GetDefinition().GetIdString(), out var item))
-         //{
-         //   return context.ResolveLink(item, text);
-         //}
-         //else
+         return type.Kind switch
          {
-            return type.Kind switch
-            {
-               TypeKind.Array when type is TypeWithElementType arrayType => new TypeLinkModel(context.ResolveTypeLink(arrayType.ElementType), null, ResolveCrefLink(context, "T:System.Array", "[]")),
-               TypeKind.Pointer when type is TypeWithElementType pointerType => new TypeLinkModel(context.ResolveTypeLink(pointerType.ElementType), null, new NoLinkModel("*")),
-               TypeKind.ByReference when type is TypeWithElementType elementType => ResolveLink(context, elementType, text),
-               TypeKind.TypeParameter => TryGetTypeParameterDocItem(context.CurrentItem, type.Name, out var typeParameter) ? (ILinkModel)ResolveLink(context, typeParameter, type.Name) : new NoLinkModel(type.Name),
-               TypeKind.Dynamic => new ExternalLinkModel("https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/using-type-dynamic", "dynamic"),
-               TypeKind.Tuple when type is TupleType tupleType => HandleTupleType(tupleType),
-               _ when type is ParameterizedType genericType => HandleGenericType(genericType),
-               _ => context.ResolveCrefLink(type.GetDefinition().GetIdString(), text)
-            };
-            switch (type.Kind)
-            {
-               case TypeKind.Array:
-                  
-                  break;
-            }
-            // External item.
-            throw new NotImplementedException();
-         }
+            TypeKind.Array when type is TypeWithElementType arrayType => new TypeLinkModel(context.ResolveTypeLink(arrayType.ElementType), null, ResolveCrefLink(context, "T:System.Array", "[]")),
+            TypeKind.Pointer when type is TypeWithElementType pointerType => new TypeLinkModel(context.ResolveTypeLink(pointerType.ElementType), null, new NoLinkModel("*")),
+            TypeKind.ByReference when type is TypeWithElementType elementType => ResolveLink(context, elementType, text),
+            TypeKind.TypeParameter => TryGetTypeParameterDocItem(context.CurrentItem, type.Name, out var typeParameter) ? (ILinkModel)ResolveLink(context, typeParameter, type.Name) : new NoLinkModel(type.Name),
+            TypeKind.Dynamic => new ExternalLinkModel("https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/using-type-dynamic", "dynamic"),
+            TypeKind.Tuple when type is TupleType tupleType => HandleTupleType(tupleType),
+            _ when type is ParameterizedType genericType => HandleGenericType(genericType),
+            _ => context.ResolveCrefLink(type.GetDefinition().GetIdString(), text)
+         };
       }
 
       public ILinkModel ResolveCrefLink(RenderingContext context, string cref, string text)
@@ -232,10 +184,10 @@ namespace MarkDocGen
          | ConversionFlags.UseNullableSpecifierForValueTypes
       };
 
-      private DocItem FindParentPage(ITemplate template, DocItem item)
+      private DocItem FindParentPage(RenderingContext context, DocItem item)
       {
          var current = item;
-         while (!template.GeneratesPage(current) && current.Parent != null)
+         while (!context.Template.GeneratesPage(current) && current.Parent != null)
          {
             current = current.Parent;
          }
@@ -247,105 +199,6 @@ namespace MarkDocGen
       {
          // TODO PP (2020-08-24): warn if non-existing.
          return new ExternalLinkModel($"https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/{langword}", langword);
-      }
-   }
-
-
-   public enum LinkType
-   {
-      Internal,
-      External,
-      TypeLink,
-      NoLink
-   }
-
-   interface ILinkModel
-   {
-      LinkType LinkType { get; }
-      string Text { get; }
-
-      ILinkModel WithText(string text);
-//      void Render(MyTemplate template, TextWriter writer);
-   }
-
-   class ExternalLinkModel : ILinkModel
-   {
-      public ExternalLinkModel(string url, string text)
-      {
-         Url = url;
-         Text = text;
-      }
-
-      public string Url { get; }
-      public string Text { get; }
-
-      public virtual LinkType LinkType => LinkType.External;
-
-      public virtual ILinkModel WithText(string text)
-      {
-         return new ExternalLinkModel(Url, text);
-      }
-   }
-
-   class InternalLinkModel : ILinkModel
-   {
-      public InternalLinkModel(string text, string fileName, string anchor)
-      {
-         Text = text;
-         FileName = fileName;
-         Anchor = anchor;
-      }
-
-      public string Text { get; }
-      public string FileName { get; }
-      public string Anchor { get; }
-      public bool HasAnchor => !String.IsNullOrEmpty(Anchor);
-
-      public LinkType LinkType => LinkType.Internal;
-
-      public ILinkModel WithText(string text)
-      {
-         return new InternalLinkModel(text, FileName, Anchor);
-      }
-   }
-
-   class NoLinkModel : ILinkModel
-   {
-      public NoLinkModel(string text)
-      {
-         Text = text;
-      }
-
-      public LinkType LinkType => LinkType.NoLink;
-
-      public string Text { get; }
-
-      public ILinkModel WithText(string text)
-      {
-         return new NoLinkModel(text);
-      }
-   }
-      
-   class TypeLinkModel : ILinkModel
-   {
-      public TypeLinkModel(ILinkModel typeLink, IReadOnlyList<ILinkModel> typeArguments, ILinkModel suffix)
-      {
-         TypeLink = typeLink;
-         TypeArguments = typeArguments ?? Array.Empty<ILinkModel>();
-         Suffix = suffix;
-      }
-
-      public LinkType LinkType => LinkType.TypeLink;
-
-      public string Text => TypeLink.Text;
-
-      public ILinkModel TypeLink { get; }
-      public IReadOnlyList<ILinkModel> TypeArguments { get; }
-      public ILinkModel Suffix { get; }
-
-      public ILinkModel WithText(string text)
-      {
-         throw new NotImplementedException();
       }
    }
 }

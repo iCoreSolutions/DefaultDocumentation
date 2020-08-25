@@ -11,7 +11,7 @@ namespace DefaultDocumentation.Model
       public ITypeParameter TypeParameter { get; }
 
       public TypeParameterDocItem(DocItem parent, ITypeParameter entity, XElement documentation)
-          : base(parent.Project, parent, entity.Name, $"{parent.FullName}.{entity.Name}", entity.Name, documentation.GetTypeParameters()?.FirstOrDefault(d => d.GetName() == entity.Name))
+          : base(parent.Project, parent, entity.Name, documentation.GetTypeParameters()?.FirstOrDefault(d => d.GetName() == entity.Name))
       {
          TypeParameter = entity;
       }

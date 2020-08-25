@@ -1,3 +1,0 @@
-﻿# {{ item.name }}
-
-{{ item.documentation.summary }}
