@@ -1,11 +1,30 @@
-﻿using System;
+﻿using DefaultDocumentation;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 
 namespace MarkDocGen
 {
+
+   class MDW
+   {
+
+      public void Test()
+      {
+         MDW w = new MDW();
+
+         w.WriteLine("Hello");
+         using (w.StartBulletList())
+         {
+            w.StartListItem();
+            w.Write("blah blah");
+            w.EndListItem();            
+         }
+      }
+   }
    class MarkdownWriter : TextWriter
    {
       [Flags]
@@ -13,20 +32,42 @@ namespace MarkDocGen
       {
          None = 0,
          Entities = 0x01,
-         Normal = 0x02 | Entities,
-         LinkContent = 0x04 | Normal,
+         Normal = 0x02,
+         LinkContent = 0x04,
          Code = 0x08,
-         TableCell = 0x10 | Normal | NewLines,
-         NewLines = 0x20,
-         BlockQuote = 0x40 | Normal
+         TableCell = 0x10,
+         NewLines = 0x20         
       }
+
+      private enum ListMode
+      {
+         None,
+         Bullet,
+         Ordered
+      }
+
+      private struct WriterState
+      {
+         public static readonly WriterState Default = new WriterState();
+         public static readonly WriterState Raw = new WriterState();
+
+         public int Indent { get; }
+         public MarkdownEscapeMode EscapeMode { get; }
+         public ListMode ListMode { get; }
+         public int BlockQuote
+      }
+
+      private readonly Stack<WriterState> StateStack = new Stack<WriterState>();
+      private WriterState State => StateStack.Peek();
+
+
 
       private readonly TextWriter m_writer;
       private bool m_lastLineEmpty = true;
       private bool m_digitsOnly = false;
       private bool m_hasWrittenNonWhitespace = false;
       private bool m_hasPendingCr = false;
-      private int m_blockQuotes = 0;
+      //private int m_blockQuotes = 0;
       private bool m_inCodeBlock;
       private bool m_inTable;
 
@@ -37,6 +78,7 @@ namespace MarkDocGen
       public MarkdownWriter(TextWriter writer)
       {
          m_writer = writer;
+         StateStack.Push(WriterState.Default);
       }
 
       public override Encoding Encoding => m_writer.Encoding;
@@ -47,23 +89,6 @@ namespace MarkDocGen
 
       public override void Write(char c)
       {
-         Write(c, MarkdownEscapeMode.Normal);
-      }
-
-      public override void Write(string s)
-      {
-         if (s == null)
-            return;
-
-         foreach (var c in s)
-            Write(c);
-      }
-
-      private void Write(char c, MarkdownEscapeMode mode)
-      {
-         if (m_inCodeBlock)
-            mode = MarkdownEscapeMode.None;
-
          if (c == '\r' && !m_hasPendingCr)
          {
             m_hasPendingCr = true;
@@ -71,18 +96,22 @@ namespace MarkDocGen
          }
 
          if (c == '\n')
-         {            
-            if (mode.HasFlag(MarkdownEscapeMode.NewLines) || m_inTable)
+         {
+            if (State.EscapeMode.HasFlag(MarkdownEscapeMode.NewLines))
             {
                WriteRaw("<br/>");
+               m_hasPendingCr = false;
                return;
             }
 
             if (m_hasPendingCr)
+            {
+               m_hasPendingCr = false;
                m_writer.Write('\r');
-            
-            Line++;
+            }
+
             Column = 0;
+            Line++;
 
             if (!m_hasWrittenNonWhitespace)
                m_lastLineEmpty = true;
@@ -92,18 +121,20 @@ namespace MarkDocGen
             m_hasWrittenNonWhitespace = false;
             m_digitsOnly = false;
             m_writer.Write('\n');
+
             return;
          }
 
          m_hasPendingCr = false;
 
-         if (Column == 0 && m_blockQuotes > 0 && mode != MarkdownEscapeMode.None)
+         if (State.Indent > 0 && Column == 0)
          {
-            for (int i = 0; i < m_blockQuotes; i++)
-            {
-               WriteRaw('>');
-            }
+            WriteIndent();
+         }
 
+         if (State.LinePrefix != null)
+         {
+            WriteRaw(State.LinePrefix);
             WriteRaw(' ');
          }
 
@@ -123,7 +154,7 @@ namespace MarkDocGen
             m_hasWrittenNonWhitespace = true;
          }
 
-         if (mode.HasFlag(MarkdownEscapeMode.Entities))
+         if (State.EscapeMode.HasFlag(MarkdownEscapeMode.Entities))
          {
             switch (c)
             {
@@ -141,7 +172,7 @@ namespace MarkDocGen
             }
          }
 
-         if (mode.HasFlag(MarkdownEscapeMode.Normal))
+         if (State.EscapeMode.HasFlag(MarkdownEscapeMode.Normal))
          {
             if (c == '.' && m_digitsOnly)
             {
@@ -157,7 +188,7 @@ namespace MarkDocGen
             }
          }
 
-         if (mode.HasFlag(MarkdownEscapeMode.LinkContent))
+         if (State.EscapeMode.HasFlag(MarkdownEscapeMode.LinkContent))
          {
             if (s_escapeLinkText.Contains(c))
             {
@@ -165,8 +196,8 @@ namespace MarkDocGen
                return;
             }
          }
-         
-         if (mode.HasFlag(MarkdownEscapeMode.Code))
+
+         if (State.EscapeMode.HasFlag(MarkdownEscapeMode.Code))
          {
             if (c == '`')
             {
@@ -175,31 +206,172 @@ namespace MarkDocGen
             }
          }
 
-         if (mode.HasFlag(MarkdownEscapeMode.TableCell))
+         if (State.EscapeMode.HasFlag(MarkdownEscapeMode.TableCell))
          {
             if (c == '|')
             {
                WriteRaw($"&#124;");
                return;
-            }            
+            }
          }
 
          if (!Char.IsWhiteSpace(c) && !Char.IsDigit(c))
             m_digitsOnly = false;
 
-         m_writer.Write(c);
          Column++;
+         m_writer.Write(c);
+
       }
 
-      private void Write(string s, MarkdownEscapeMode mode)
+      private void WriteIndent()
       {
-         foreach (var c in s)
-            Write(c, mode);
+         m_writer.Write(new string(' ', State.Indent));
       }
+
+      public override void Write(string s)
+      {
+         if (s == null)
+            return;
+
+         foreach (var c in s)
+            Write(c);
+      }
+
+      //private void Write(char c, MarkdownEscapeMode mode)
+      //{
+      //   if (m_inCodeBlock)
+      //      mode = MarkdownEscapeMode.None;
+
+      //   if (c == '\r' && !m_hasPendingCr)
+      //   {
+      //      m_hasPendingCr = true;
+      //      return;
+      //   }
+
+      //   if (c == '\n')
+      //   {            
+      //      if (mode.HasFlag(MarkdownEscapeMode.NewLines) || m_inTable)
+      //      {
+      //         WriteRaw("<br/>");
+      //         return;
+      //      }
+
+      //      if (m_hasPendingCr)
+      //         m_writer.Write('\r');
+
+      //      Line++;
+      //      Column = 0;
+
+      //      if (!m_hasWrittenNonWhitespace)
+      //         m_lastLineEmpty = true;
+      //      else
+      //         m_lastLineEmpty = false;
+
+      //      m_hasWrittenNonWhitespace = false;
+      //      m_digitsOnly = false;
+      //      m_writer.Write('\n');
+      //      return;
+      //   }
+
+      //   m_hasPendingCr = false;
+
+      //   if (Column == 0 && m_blockQuotes > 0 && mode != MarkdownEscapeMode.None)
+      //   {
+      //      for (int i = 0; i < m_blockQuotes; i++)
+      //      {
+      //         WriteRaw('>');
+      //      }
+
+      //      WriteRaw(' ');
+      //   }
+
+      //   if (Char.IsDigit(c))
+      //   {
+      //      if (!m_hasWrittenNonWhitespace)
+      //         m_digitsOnly = true;
+      //   }
+      //   else if (c != '.')
+      //   {
+      //      m_digitsOnly = false;
+      //   }
+
+      //   bool hadWrittenNonWhitespace = m_hasWrittenNonWhitespace;
+      //   if (!Char.IsWhiteSpace(c))
+      //   {
+      //      m_hasWrittenNonWhitespace = true;
+      //   }
+
+      //   if (mode.HasFlag(MarkdownEscapeMode.Entities))
+      //   {
+      //      switch (c)
+      //      {
+      //         case '<':
+      //            WriteRaw("&lt;");
+      //            return;
+
+      //         case '>':
+      //            WriteRaw("&gt;");
+      //            return;
+
+      //         case '&':
+      //            WriteRaw("&amp;");
+      //            return;
+      //      }
+      //   }
+
+      //   if (mode.HasFlag(MarkdownEscapeMode.Normal))
+      //   {
+      //      if (c == '.' && m_digitsOnly)
+      //      {
+      //         m_digitsOnly = false;
+      //         WriteRaw("\\.");
+      //         return;
+      //      }
+
+      //      if (s_escapeDefaultLineStart.Contains(c) && !hadWrittenNonWhitespace || s_escapeDefault.Contains(c))
+      //      {
+      //         WriteRaw($"\\{c}");
+      //         return;
+      //      }
+      //   }
+
+      //   if (mode.HasFlag(MarkdownEscapeMode.LinkContent))
+      //   {
+      //      if (s_escapeLinkText.Contains(c))
+      //      {
+      //         WriteRaw($"\\{c}");
+      //         return;
+      //      }
+      //   }
+
+      //   if (mode.HasFlag(MarkdownEscapeMode.Code))
+      //   {
+      //      if (c == '`')
+      //      {
+      //         WriteRaw("``");
+      //         return;
+      //      }
+      //   }
+
+      //   if (mode.HasFlag(MarkdownEscapeMode.TableCell))
+      //   {
+      //      if (c == '|')
+      //      {
+      //         WriteRaw($"&#124;");
+      //         return;
+      //      }            
+      //   }
+
+      //   if (!Char.IsWhiteSpace(c) && !Char.IsDigit(c))
+      //      m_digitsOnly = false;
+
+      //   m_writer.Write(c);
+      //   Column++;
+      //}
 
       public void WriteRaw(char c)
       {
-         Write(c, MarkdownEscapeMode.None);
+         Write(c);
       }
 
       public void WriteRaw(string s)
@@ -207,8 +379,32 @@ namespace MarkDocGen
          if (s == null)
             return;
 
-         foreach (var c in s)
-            Write(c, MarkdownEscapeMode.None);
+         using (UseState(WriterState.Raw))
+         {
+            foreach (var c in s)
+               Write(c);
+         }
+      }
+
+      private struct StateDisposable : IDisposable
+      {
+         private readonly MarkdownWriter m_owner;
+
+         public StateDisposable(MarkdownWriter owner)
+         {
+            m_owner = owner;
+         }
+
+         public void Dispose()
+         {
+            m_owner.StateStack.Pop();
+         }
+      }
+
+      private StateDisposable UseState(WriterState newState)
+      {
+         StateStack.Push(newState);
+         return new StateDisposable(this);
       }
 
       public override void WriteLine()
@@ -280,7 +476,7 @@ namespace MarkDocGen
          }
          else
          {
-            WriteRaw($"`{text}`");            
+            WriteRaw($"`{text}`");
          }
       }
 
@@ -365,7 +561,7 @@ namespace MarkDocGen
                   WriteRaw("| ");
                else
                   WriteRaw(" ");
-               
+
                WriteRaw(row[i]);
                if (row[i].Length < maxLengths[i])
                   Write(new string(' ', maxLengths[i] - row[i].Length));
@@ -429,6 +625,8 @@ namespace MarkDocGen
 
       public void StartBlockQuote()
       {
+         EnsureNewLine();
+         
          if (m_blockQuotes == 0)
             EnsureNewLine();
 
@@ -451,7 +649,7 @@ namespace MarkDocGen
          }
          EnsureNewLine();
       }
-      
+
       // TODO PP (2020-08-25): Add support for lists (ordered, and unordered, and perhaps definition lists)
 
       public class TableDefinition

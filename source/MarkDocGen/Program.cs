@@ -19,53 +19,53 @@ namespace MarkDocGen
    {
       static void Main(string[] args)
       {
-//         using (StreamWriter sw = new StreamWriter("F:\\test_md.md"))
-//         {
-//            MarkdownWriter w = new MarkdownWriter(sw);
+         using (StreamWriter sw = new StreamWriter("F:\\test_md.md"))
+         {
+            MarkdownWriter w = new MarkdownWriter(sw);
 
-//            w.WriteLine("Hello World");
-//            w.EnsureNewParagraph();
-//            w.Write("## Paragrap44h 1");
-//            w.EnsureNewParagraph();
-//            w.EnsureNewParagraph();
-//            w.EnsureNewParagraph();
-//            w.Write("Paragraph 2");
-//            w.EnsureNewParagraph();
-//            w.WriteLine("  1. Pelle");
-//            w.WriteLine(" [Hello () World]");
-//            w.WriteLine(" And this is a sentence. The previous #dot should not be escaped.");
-//            w.WriteLink("[(My display Text)", "Pelle.md#Section1");
-//            w.EnsureNewParagraph();
-//            w.WriteInlineCode("Command`1");
-//            w.WriteCodeBlock(@"public void WriteCodeBlock(string content, string language = null)
-//      {
-//         if (Column != 0)
-//            WriteLine();
+            w.WriteLine("Hello World");
+            w.EnsureNewParagraph();
+            w.Write("## Paragrap44h 1");
+            w.EnsureNewParagraph();
+            w.EnsureNewParagraph();
+            w.EnsureNewParagraph();
+            w.Write("Paragraph 2");
+            w.EnsureNewParagraph();
+            w.WriteLine("  1. Pelle");
+            w.WriteLine(" [Hello () World]");
+            w.WriteLine(" And this is a sentence. The previous #dot should not be escaped.");
+            w.WriteLink("[(My display Text)", "Pelle.md#Section1");
+            w.EnsureNewParagraph();
+            w.WriteInlineCode("Command`1");
+            w.WriteCodeBlock(@"public void WriteCodeBlock(string content, string language = null)
+      {
+         if (Column != 0)
+            WriteLine();
 
-//         WriteRaw($""```{ language}"");
-//         WriteLine();
-//            WriteRaw(content);
+         WriteRaw($""```{ language}"");
+         WriteLine();
+            WriteRaw(content);
 
-//            if (Column != 0)
-//               WriteLine();
-//            WriteRaw(""```"");
-//            WriteLine();
-//", "csharp");
+            if (Column != 0)
+               WriteLine();
+            WriteRaw(""```"");
+            WriteLine();
+", "csharp");
 
-//            w.EnsureNewParagraph();
+            w.EnsureNewParagraph();
 
-//            MarkdownWriter.TableDefinition td = new MarkdownWriter.TableDefinition(new[] { "Apa", "Pelle", "Peter är här lite längre\nOch detta är en ny rad.", "Cepa" });
-//            td.AddRow(new[] { "Pelle", "Gustav", "d|d", "A longer line this is... yes!" });
-//            td.AddRow(new[] { "Gurra" });
-//            w.WriteTable(td);
-//            w.WriteHeading(1, "This is a heading");
-//            w.WriteHeading(6, "This is a heading\r\nwith a newline.");
-//            w.EnsureNewParagraph();
+            MarkdownWriter.TableDefinition td = new MarkdownWriter.TableDefinition(new[] { "Apa", "Pelle", "Peter är här lite längre\nOch detta är en ny rad.", "Cepa" });
+            td.AddRow(new[] { "Pelle", "Gustav", "d|d", "A longer line this is... yes!" });
+            td.AddRow(new[] { "Gurra" });
+            w.WriteTable(td);
+            w.WriteHeading(1, "This is a heading");
+            w.WriteHeading(6, "This is a heading\r\nwith a newline.");
+            w.EnsureNewParagraph();
 
-//            w.WriteBlockQuote("This is my block quote.\nAnd after a CR\nAnd after an LF\r\nAnd after a CRLF.\r\n\r\n");
-//         }
+            w.WriteBlockQuote("This is my block quote.\nAnd after a CR\nAnd after an LF\r\nAnd after a CRLF.\r\n\r\n");
+         }
 
-//         return;
+         return;
 
          var element = XElement.Parse("<summary><para apa=\"1\">This is some <b><i>bold and italic</i></b> text, and some in <c>Code</c> with a see <see cref=\"T:System.Collections.Generic.IEnumerable`1\" />. That's it!</para><para>And this is a second paragraph.\r\nAnd this is a see with content: <see cref=\"T:System.String\">A string link</see></para>" +
             "<para>And a parameter reference: <paramref name=\"value\"/> and a non existing one in <paramref name=\"other\"/></para>" +
