@@ -339,6 +339,12 @@
             </remarks>
             <seealso cref="M:Dummy.SubDummy.SomeNamespace.SubDummy`1.#ctor(System.Tuple{System.Int32,System.String})"/>
         </member>
+        <member name="M:Dummy.SubDummy.SomeNamespace.SubDummy`1.#ctor">
+            <summary>
+            <para>This is the first paragraph in the description of the <see cref="T:Dummy.SubDummy.SomeNamespace.SubDummy`1"/> class.</para>
+            <para>Another one, that has some <c>code</c> and possibly also something else, like &lt;.</para>
+            </summary>
+        </member>
         <member name="P:Dummy.SubDummy.SomeNamespace.SubDummy`1.ValueTupleProp">
             <summary>
             This returns a value tuple.

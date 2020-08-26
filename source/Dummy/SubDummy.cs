@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace Dummy.SubDummy.SomeNamespace
 {
+   public interface Ifc1
+   {
+   }
+
+   public interface Ifc2
+   {
+   }
+
    /// <summary>
    /// SumDummy is a class deriving from a nested class.
    /// </summary>
@@ -12,8 +20,12 @@ namespace Dummy.SubDummy.SomeNamespace
    /// <para>And finally one last paragraph, with a <see cref="IEnumerable{T}"/> (see) and also a <see langword="false"/>.</para>
    /// </remarks>
    /// <seealso cref="SubDummy{T}.SubDummy(Tuple{int, string})"/>
-   class SubDummy<T> : DummyClass.DummyNested<T>
+   class SubDummy<T> : DummyClass.DummyNested<T>, Ifc1, Ifc2
    {
+      /// <summary>
+      /// <para>This is the first paragraph in the description of the <see cref="SubDummy{T}"/> class.</para>
+      /// <para>Another one, that has some <c>code</c> and possibly also something else, like &lt;.</para>
+      /// </summary>
       public SubDummy()
       {
       }
