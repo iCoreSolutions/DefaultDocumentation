@@ -156,7 +156,6 @@ namespace MarkDocGen
                               writer.Write($"</{el.Name.LocalName}>");
                            }
 
-                           // TODO PP (2020-08-23): wtf? builder + writer?
                            builder.Append(writer.ToString());
                         }
 

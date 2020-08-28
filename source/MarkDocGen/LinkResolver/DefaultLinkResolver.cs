@@ -15,16 +15,8 @@ using Serilog;
 
 namespace MarkDocGen
 {
-   // TODO PP (2020-08-28): Have this use the template instead of file name strategy.
    class DefaultLinkResolver : ILinkResolver
    {
-      private IFileNameStrategy m_fileNameStrategy;
-
-      public DefaultLinkResolver(IFileNameStrategy fileNameStrategy)
-      {
-         m_fileNameStrategy = fileNameStrategy;
-      }
-
       private IPageRenderer GetLinkTargetPageRenderer(RenderingContext context, DocItem item)
       {
          var supportingRenderers = context.Template.PageRenderers.Where(renderer => renderer.Supports(item) && renderer.IsLinkTarget(item));

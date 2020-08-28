@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ICSharpCode.Decompiler.CSharp.OutputVisitor;
 using ICSharpCode.Decompiler.Output;
-using ICSharpCode.Decompiler.TypeSystem;
 using MarkDocGen;
 
 namespace DefaultDocumentation.Model
@@ -41,57 +40,5 @@ namespace DefaultDocumentation.Model
             
          Documentation = documentation;
       }
-      
-      // TODO PP (2020-08-25): Remove commented code.
-      //private static string GetName(IEntity entity, IAmbience ambience)
-      //{
-      //   string fullName = ambience.ConvertSymbol(entity);
-
-      //   if (entity.SymbolKind == SymbolKind.Operator)
-      //   {
-      //      int offset = 17;
-      //      int index = fullName.IndexOf("implicit operator ");
-      //      if (index < 0)
-      //      {
-      //         index = fullName.IndexOf("explicit operator ");
-
-      //         if (index < 0)
-      //         {
-      //            index = fullName.IndexOf("operator ");
-      //            offset = fullName.IndexOf('(') - index;
-      //         }
-      //      }
-
-      //      if (index >= 0)
-      //      {
-      //         fullName = fullName.Substring(0, index) + entity.Name + fullName.Substring(index + offset);
-      //      }
-      //   }
-
-      //   return fullName;
-      //}
-
-      // TODO PP (2020-08-20): Remove commented code.
-      //public abstract void WriteDocumentation(DocumentationWriter writer);
-
-      //public virtual string GetLink(FileNameMode fileNameMode) => (fileNameMode switch
-      //{
-      //    FileNameMode.Md5 => Convert.ToBase64String(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(FullName))),
-      //    FileNameMode.Name => _entity is null ? FullName : string.Join(".", GetHierarchy().Reverse()),
-      //    _ => FullName
-      //}).Clean();
-
-   }
-
-   internal abstract class SymbolDocItem : DocItem
-   {
-      protected SymbolDocItem(DocItem parent, ISymbol symbol, string id, XElement documentation)
-      : base(parent.Project, parent, id, documentation)
-      {
-         Symbol = symbol;
-      }
-
-      public ISymbol Symbol { get; }
-
    }
 }

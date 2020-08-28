@@ -102,7 +102,7 @@ namespace MarkDocGen
          //return;
          // TemplateSystem templates = new TemplateSystem(@"D:\Git\DefaultDocumentation\source\MarkDocGen\Template", log: msLog);
 
-         IFileNameStrategy fileNameStrategy = new DefaultFileNameStrategy();
+         IFileNameStrategy fileNameStrategy = DefaultFileNameStrategy.Instance;
          //Renderer renderer = new Renderer(templates, fileNameStrategy);
 
          if (Directory.Exists(outputDirectory))
@@ -111,7 +111,7 @@ namespace MarkDocGen
          }
          Directory.CreateDirectory(outputDirectory);
 
-         DefaultLinkResolver resolver = new DefaultLinkResolver(new DefaultFileNameStrategy());
+         DefaultLinkResolver resolver = new DefaultLinkResolver();
 
          DocusaurusTemplate template = new DocusaurusTemplate(fileNameStrategy);
          DocGen generator = new DocGen(DefaultFileNameStrategy.Instance, resolver, msLog);

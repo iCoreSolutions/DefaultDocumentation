@@ -28,27 +28,5 @@ namespace DefaultDocumentation.Model
       public override DocItemKind Kind => DocItemKind.Enum;
 
       public new IEnumerable<EnumFieldDocItem> Fields => base.Fields.Cast<EnumFieldDocItem>();
-
-      // TODO PP (2020-08-20): Remove commented code. 
-      //public override void WriteDocumentation(DocumentationWriter writer)
-      //{
-      //    writer.WriteHeader();
-      //    writer.WritePageTitle(Name, Type.Kind.ToString());
-
-      //    writer.Write(this, Documentation.GetSummary());
-
-      //    writer.WriteLine("```csharp");
-      //    writer.Write(CodeAmbience.ConvertSymbol(Type));
-      //    IType enumType = Type.GetEnumUnderlyingType();
-      //    writer.WriteLine(enumType.IsKnownType(KnownTypeCode.Int32) ? string.Empty : $" : {enumType.FullName}");
-      //    writer.WriteLine("```");
-
-      //    // attribute
-
-      //    writer.WriteDocItems<EnumFieldDocItem>("### Fields");
-
-      //    writer.Write("### Example", Documentation.GetExample(), this);
-      //    writer.Write("### Remarks", Documentation.GetRemarks(), this);
-      //}
    }
 }

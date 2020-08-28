@@ -16,22 +16,5 @@ namespace DefaultDocumentation.Model
       }
 
       public override DocItemKind Kind => DocItemKind.Home;
-
-
-      // TODO PP (2020-08-20): Remove commented code.
-      //public override bool GeneratePage => _explicitGenerate || HasMultipleNamespaces;
-
-      //public override void WriteDocumentation(DocumentationWriter writer)
-      //{
-      //    writer.WriteHeader();
-
-      //    writer.Write(this, Documentation.GetSummary());
-
-      //    writer.Write("### Remarks", Documentation.GetRemarks(), this);
-
-      //    writer.WriteChildrenLink<NamespaceDocItem>("Namespaces");
-      //}
-
-      //public override string GetLink(FileNameMode fileNameMode) => FullName.Clean();
    }
 }

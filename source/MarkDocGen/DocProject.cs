@@ -21,8 +21,6 @@ using System.Xml.Linq;
 namespace MarkDocGen
 {
    // TODO PP (2020-08-25): Fix anchors
-   // TODO PP (2020-08-25): Overload documentation support... <overload> element? Or just O:... but can't do summary with O: only.
-
    class DocProject
    {
       private class DocItemCollection : KeyedCollection<string, DocItem>
@@ -68,12 +66,6 @@ namespace MarkDocGen
          }
 
          AssemblyDocItem assemblyDocItem = new AssemblyDocItem(this, _homeItem, _decompiler.TypeSystem.MainModule, ConvertToDocumentation(documentationProvider.GetDocumentation($"T:{_decompiler.TypeSystem.MainModule.AssemblyName}.AssemblyDoc")));
-         // TODO PP (2020-08-20): Remove commented code.
-         //HomeDocItem homeDocItem = new HomeDocItem(
-         //    homePageName,
-         //    _decompiler.TypeSystem.MainModule.AssemblyName,
-         //    ConvertToDocumentation(documentationProvider.GetDocumentation($"T:{_decompiler.TypeSystem.MainModule.AssemblyName}.AssemblyDoc")));
-         //yield return homeDocItem;
          _docItems.Add(assemblyDocItem);
 
          foreach (ITypeDefinition type in _decompiler.TypeSystem.MainModule.TypeDefinitions.Where(t => t.Name != "NamespaceDoc" && t.Name != "AssemblyDoc"))

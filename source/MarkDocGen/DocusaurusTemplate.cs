@@ -260,8 +260,8 @@ namespace MarkDocGen
 
       private void RenderMethod(RenderingContext context, MethodBaseDocItem item, TextWriter writer)
       {
-         // TODO PP (2020-08-25): Write and header only if page.
-         WriteHeader(context, item, writer);
+         if (this.GeneratesPage(item))
+            WriteHeader(context, item, writer);
 
          if (!this.GeneratesPage(item))
             RenderAnchorTitle($"{GetDisplayName(item)} {item.Method.SymbolKind}", item.AnchorId, writer);
@@ -382,7 +382,6 @@ namespace MarkDocGen
 
       private void RenderReturns(RenderingContext context, MethodBaseDocItem item, TextWriter writer)
       {
-         // TODO PP (2020-08-24): The item should expose this!
          if (item.Entity is IMember member && member.ReturnType != null && member.ReturnType.Kind != TypeKind.Void)
          {
             writer.WriteLine("### Returns");
@@ -574,7 +573,6 @@ namespace MarkDocGen
 
          // TODO PP (2020-08-26): Remarks here maybe?
 
-         // TODO PP (2020-08-24): Fix properties/methods/fields/operators/etc... Similar beasts... perhaps we can do something here?
          RenderMemberTable(context, "Fields", item.Fields, writer);
 
          RenderMemberTable(context, "Properties", item.AllProperties(), writer);
@@ -600,7 +598,6 @@ namespace MarkDocGen
       {
          if (items != null && items.Any())
          {
-            // TODO PP (2020-08-24): Format tables nicer.
             writer.WriteLine("|Name|Description|");
             writer.WriteLine("|---|---|");
             foreach (var item in items)

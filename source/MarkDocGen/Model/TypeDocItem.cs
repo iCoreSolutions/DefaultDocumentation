@@ -38,7 +38,6 @@ namespace DefaultDocumentation.Model
 
       public string Name => Type.Name;
       
-      // TODO PP (2020-08-20): Make IReadOnlyList
       public TypeParameterDocItem[] TypeParameters { get; }
 
       public IEnumerable<PropertyDocItem> Properties => Children.OfType<PropertyDocItem>().OrderBy(property => property.Name);
