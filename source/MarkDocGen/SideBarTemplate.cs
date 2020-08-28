@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DefaultDocumentation.Model;
@@ -6,7 +7,31 @@ using Newtonsoft.Json.Linq;
 
 namespace MarkDocGen
 {
-   class SideBarTemplate : ITemplate
+   abstract class TemplateBase : ITemplate
+   {
+      private readonly List<IPageRenderer> m_pageRenderers = new List<IPageRenderer>();
+
+      public TemplateBase()
+      {
+      }
+
+      public IReadOnlyList<IPageRenderer> PageRenderers => m_pageRenderers;
+
+      protected void AddRenderer(IPageRenderer renderer)
+      {
+         m_pageRenderers.Add(renderer);
+      }
+
+      public abstract string GetDisplayName(DocItem item);      
+      public abstract string RenderCodeBlock(RenderingContext context, string code);
+      public abstract string RenderInlineCode(RenderingContext context, string content);
+      public abstract string RenderLink(RenderingContext context, ILinkModel link);
+      public abstract string RenderParagraph(RenderingContext context, string content);
+      public abstract string RenderParamRef(RenderingContext context, ILinkModel link);
+      public abstract string RenderText(RenderingContext context, string text);
+   }
+
+   class SideBarTemplate : TemplateBase
    {
       public ITemplate MainTemplate { get; }
       public string DirectoryPrefix { get; }
@@ -15,20 +40,11 @@ namespace MarkDocGen
       {
          MainTemplate = mainTemplate;
          DirectoryPrefix = directoryPrefix;
+         AddRenderer(new PageRenderer<HomeDocItem>(RenderPage, _ => "Sidebar.json", isLinkTarget: _ => false));
       }
 
-      public PageInfo GetPageInfo(DocItem item)
-      {
-         if (item is HomeDocItem)
-            return new PageInfo(".json", "Sidebar");
-         else
-            return PageInfo.NoPage;
-      }
-
-      public void RenderPage(RenderingContext context, TextWriter writer)
-      {
-         var item = (HomeDocItem)context.CurrentItem;
-
+      public void RenderPage(RenderingContext context, DocItem item, TextWriter writer)
+      {         
          JObject o = new JObject();         
          foreach (var ns in item.Children.OfType<AssemblyDocItem>().SelectMany(asm => asm.Children.OfType<DocItem>()))
          {
@@ -98,39 +114,39 @@ namespace MarkDocGen
          return $"{DirectoryPrefix}/{item.AnchorId}";
       }
 
-      public string RenderCodeBlock(RenderingContext context, string code)
-      {
-         throw new NotImplementedException();
-      }
-
-      public string RenderInlineCode(RenderingContext context, string content)
-      {
-         throw new NotImplementedException();
-      }
-
-      public string RenderLink(RenderingContext context, ILinkModel link)
-      {
-         throw new NotImplementedException();
-      }
-
-     public string RenderParagraph(RenderingContext context, string content)
-      {
-         throw new NotImplementedException();
-      }
-
-      public string RenderParamRef(RenderingContext context, InternalLinkModel link)
-      {
-         throw new NotImplementedException();
-      }
-
-      public string RenderText(RenderingContext context, string text)
-      {
-         throw new NotImplementedException();
-      }
-
-      public string GetDisplayName(DocItem item)
+      public override string GetDisplayName(DocItem item)
       {
          return item.Id;
+      }
+
+      public override string RenderCodeBlock(RenderingContext context, string code)
+      {
+         throw new NotImplementedException();
+      }
+
+      public override string RenderInlineCode(RenderingContext context, string content)
+      {
+         throw new NotImplementedException();
+      }
+
+      public override string RenderLink(RenderingContext context, ILinkModel link)
+      {
+         throw new NotImplementedException();
+      }
+
+      public override string RenderParagraph(RenderingContext context, string content)
+      {
+         throw new NotImplementedException();
+      }
+
+      public override string RenderParamRef(RenderingContext context, ILinkModel link)
+      {
+         throw new NotImplementedException();
+      }
+
+      public override string RenderText(RenderingContext context, string text)
+      {
+         throw new NotImplementedException();
       }
    }
 }

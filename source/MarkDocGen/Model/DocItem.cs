@@ -41,7 +41,7 @@ namespace DefaultDocumentation.Model
             
          Documentation = documentation;
       }
-
+      
       // TODO PP (2020-08-25): Remove commented code.
       //private static string GetName(IEntity entity, IAmbience ambience)
       //{

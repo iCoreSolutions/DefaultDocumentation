@@ -29,16 +29,16 @@ namespace MarkDocGen
       {
          foreach (var item in project.Items)
          {
-            PageInfo pageInfo = template.GetPageInfo(item);
-            if (pageInfo.GeneratesPage)
+            var renderers = template.PageRenderers;
+            foreach (var renderer in renderers.Where(r => r.Supports(item)))
             {
-               string filePath = Path.Combine(outputDirectory, pageInfo.FileNameOverride == null ? FileNameStrategy.GetFileName(item, pageInfo.Extension) : pageInfo.FileNameOverride + pageInfo.Extension);
+               string filePath = Path.Combine(outputDirectory, renderer.GetFileName(item));
 
                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                using (StreamWriter writer = new StreamWriter(fs, Encoding.UTF8))
                {
                   RenderingContext renderingContext = new RenderingContext(this, template, item, FileNameStrategy, LinkResolver, Log);
-                  template.RenderPage(renderingContext, writer);
+                  renderer.RenderPage(renderingContext, item, writer);                  
                }
             }
          }

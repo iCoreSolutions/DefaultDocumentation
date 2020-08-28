@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Xml.Linq;
 using ICSharpCode.Decompiler.Documentation;
+using ICSharpCode.Decompiler.TypeSystem;
 using MarkDocGen;
 
 namespace DefaultDocumentation.Model
@@ -11,7 +12,11 @@ namespace DefaultDocumentation.Model
       public OverloadGroupDocItem(DocItem parent, string fullName, string name, XElement documentation)
          : base(parent.Project, parent, "O:" + fullName, documentation)
       {
+         Name = name;
       }
+
+      public string Name { get; }
+      public abstract SymbolKind SymbolKind { get; }
    }
 
    internal abstract class MethodBaseOverloadGroupDocItem : OverloadGroupDocItem
@@ -32,6 +37,7 @@ namespace DefaultDocumentation.Model
       }
 
       public override DocItemKind Kind => DocItemKind.MethodOverloadGroup;
+      public override SymbolKind SymbolKind => SymbolKind.Method;
 
       public IEnumerable<MethodDocItem> Methods => Children.Cast<MethodDocItem>().OrderBy(m => m.Name).ThenBy(m => m.Parameters.Length);
       public override IEnumerable<MethodBaseDocItem> Members => Methods;
@@ -45,6 +51,7 @@ namespace DefaultDocumentation.Model
       }
 
       public override DocItemKind Kind => DocItemKind.OperatorOverloadGroup;
+      public override SymbolKind SymbolKind => SymbolKind.Operator;
 
       public IEnumerable<OperatorDocItem> Operators => Children.Cast<OperatorDocItem>().OrderBy(m => m.Name).ThenBy(m => m.Parameters.Length);
       public override IEnumerable<MethodBaseDocItem> Members => Operators;
@@ -58,6 +65,7 @@ namespace DefaultDocumentation.Model
       }
 
       public override DocItemKind Kind => DocItemKind.ConstructorOverloadGroup;
+      public override SymbolKind SymbolKind => SymbolKind.Constructor;
 
       public IEnumerable<ConstructorDocItem> Constructors => Children.Cast<ConstructorDocItem>().OrderBy(c => c.Parameters.Length);
       public override IEnumerable<MethodBaseDocItem> Members => Constructors;
@@ -71,6 +79,7 @@ namespace DefaultDocumentation.Model
       }
 
       public override DocItemKind Kind => DocItemKind.PropertyOverloadGroup;
+      public override SymbolKind SymbolKind => SymbolKind.Property;
 
       public IEnumerable<PropertyDocItem> Properties => Children.Cast<PropertyDocItem>().OrderBy(p => p.Name);      
    }

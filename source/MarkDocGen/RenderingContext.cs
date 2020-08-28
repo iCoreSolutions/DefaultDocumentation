@@ -36,9 +36,10 @@ namespace MarkDocGen
             return (current as EntityDocItem)?.Entity.Compilation ?? ((current as AssemblyDocItem)?.Module)?.Compilation;
          }
       }
-
-      // TODO PP (2020-08-23): Change to interface
+      
       public ITemplate Template { get; }
+
+      // TODO PP (2020-08-28): Don't linke CurrentItem here... But we need this to resovle type parameters it seems... Maybe enough with current page? (no)
       public DocItem CurrentItem { get; }
       
       public RenderingContext WithItem(DocItem item)
@@ -59,7 +60,7 @@ namespace MarkDocGen
          return context.LinkResolver.ResolveLink(context, type, text);
       }
 
-      public static InternalLinkModel ResolveLink(this RenderingContext context, DocItem item, string text = null)
+      public static ILinkModel ResolveLink(this RenderingContext context, DocItem item, string text = null)
       {
          return context.LinkResolver.ResolveLink(context, item, text);
       }

@@ -10,6 +10,8 @@ using ICSharpCode.Decompiler.Documentation;
 using ICSharpCode.Decompiler.Output;
 using ICSharpCode.Decompiler.TypeSystem;
 using ICSharpCode.Decompiler.TypeSystem.Implementation;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace MarkDocGen
 {
@@ -23,19 +25,36 @@ namespace MarkDocGen
          m_fileNameStrategy = fileNameStrategy;
       }
 
-      public InternalLinkModel ResolveLink(RenderingContext context, DocItem item, string text)
+      private IPageRenderer GetLinkTargetPageRenderer(RenderingContext context, DocItem item)
       {
-         var pageInfo = context.Template.GetPageInfo(item);
-         if (pageInfo.GeneratesPage)
+         var supportingRenderers = context.Template.PageRenderers.Where(renderer => renderer.Supports(item) && renderer.IsLinkTarget(item));
+         if (supportingRenderers.Any())
          {
-            var fileName = pageInfo.FileNameOverride == null ? m_fileNameStrategy.GetFileName(item, pageInfo.Extension) : pageInfo.FileNameOverride + pageInfo.Extension;
+            if (supportingRenderers.Skip(1).Any())
+               throw new InvalidOperationException($"Multiple renderers reported item of type {item.Kind} as a page link target.");
+            return supportingRenderers.First();
+         }
+         return null;
+      }
+
+      public ILinkModel ResolveLink(RenderingContext context, DocItem item, string text)
+      {
+         var renderer = GetLinkTargetPageRenderer(context, item);
+         if (renderer != null)
+         {
+            var fileName = renderer.GetFileName(item);
             return new InternalLinkModel(text ?? context.Template.GetDisplayName(item), fileName, null);
          }
          else
          {
             var pageItem = FindParentPage(context, item);
-            pageInfo = context.Template.GetPageInfo(pageItem);
-            var fileName = "./" + (pageInfo.FileNameOverride == null ? m_fileNameStrategy.GetFileName(item, pageInfo.Extension) : pageInfo.FileNameOverride + pageInfo.Extension); 
+            renderer = GetLinkTargetPageRenderer(context, pageItem);
+            if (renderer == null)
+            {               
+               return new NoLinkModel(text ?? context.Template.GetDisplayName(item));
+            }
+
+            var fileName = "./" + renderer.GetFileName(pageItem);
             return new InternalLinkModel(text ?? context.Template.GetDisplayName(item), fileName, item.AnchorId);
          }
       }
@@ -108,10 +127,10 @@ namespace MarkDocGen
          {
             if (cref.StartsWith("T:"))
             {
-               // TODO PP (2020-08-21): Sanity checks
+               // TODO PP (2020-08-21): Sanity checks perhaps and... NoLinkModel does not equal an unresolved link, does it?
                var type = context.Compilation.FindType(new FullTypeName(cref.Substring(2)));
                if (type == null)
-                  throw new Exception();
+                  return new NoLinkModel($"Unresolved link {cref}");
 
                return new ExternalLinkModel(GetDotNetApiUrl(type.ReflectionName.Replace("`", "-").ToLower()), String.IsNullOrEmpty(text) ? TypeNameAmbience.ConvertType(type) : text);
             }
@@ -190,7 +209,7 @@ namespace MarkDocGen
       private DocItem FindParentPage(RenderingContext context, DocItem item)
       {
          var current = item;
-         while (!context.Template.GetPageInfo(current).GeneratesPage && current.Parent != null)
+         while (GetLinkTargetPageRenderer(context, current) == null && current.Parent != null)
          {
             current = current.Parent;
          }

@@ -76,7 +76,7 @@ namespace MarkDocGen
          var assemblyPath = @"D:\Git\DefaultDocumentation\source\Dummy\bin\Debug\netstandard2.0\Dummy.dll";
          //assemblyPath = @"F:\ETWork\Bin\iCore.Public.Types.dll";
          var assemblyDocPath = Path.ChangeExtension(assemblyPath, ".xml");            
-         var outputDirectory = "F:\\Temp\\Render";
+         var outputDirectory = @"F:\WIP\d\docs\iCoreCodedApi";
 
          var logger = new LoggerConfiguration()
             .WriteTo.Console().MinimumLevel.Verbose().CreateLogger();
@@ -113,13 +113,13 @@ namespace MarkDocGen
 
          DefaultLinkResolver resolver = new DefaultLinkResolver(new DefaultFileNameStrategy());
 
-         MyTemplate2 template = new MyTemplate2();
+         DocusaurusTemplate template = new DocusaurusTemplate(fileNameStrategy);
          DocGen generator = new DocGen(DefaultFileNameStrategy.Instance, resolver, msLog);
 
-         generator.Generate(project, template, @"F:\WIP\d\docs\iCoreCodedApi");
+         generator.Generate(project, template, outputDirectory);
 
          SideBarTemplate sbt = new SideBarTemplate(template, "iCoreCodedApi");
-         generator.Generate(project, sbt, @"F:\WIP\d\docs\iCoreCodedApi");
+         generator.Generate(project, sbt, outputDirectory);
 
 
          //var item = project.Items.OfType<MethodDocItem>().First(m => m.Method.Name == "DummyAsync");

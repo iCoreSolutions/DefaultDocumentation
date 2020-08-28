@@ -15,7 +15,7 @@ namespace DefaultDocumentation.Model
       }
 
       public string Name => Method.Name;
-
+      public bool IsOverloaded => Parent is OverloadGroupDocItem;
       public IMethod Method { get; }
       public ParameterDocItem[] Parameters { get; }
    }
