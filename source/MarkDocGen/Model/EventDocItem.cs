@@ -6,7 +6,7 @@ using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
-   internal sealed class EventDocItem : EntityDocItem
+   internal sealed class EventDocItem : MemberDocItem
    {
       private static readonly CSharpAmbience CodeAmbience = new CSharpAmbience
       {

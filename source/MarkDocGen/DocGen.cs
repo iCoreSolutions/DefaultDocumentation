@@ -25,13 +25,14 @@ namespace MarkDocGen
       public IFileNameStrategy FileNameStrategy { get; }
       public ILinkResolver LinkResolver { get; }
 
-      public void Generate(DocProject project, MyTemplate2 template, string outputDirectory)
+      public void Generate(DocProject project, ITemplate template, string outputDirectory)
       {
          foreach (var item in project.Items)
          {
-            if (template.GeneratesPage(item))
+            PageInfo pageInfo = template.GetPageInfo(item);
+            if (pageInfo.GeneratesPage)
             {
-               string filePath = Path.Combine(outputDirectory, FileNameStrategy.GetFileName(item));
+               string filePath = Path.Combine(outputDirectory, pageInfo.FileNameOverride == null ? FileNameStrategy.GetFileName(item, pageInfo.Extension) : pageInfo.FileNameOverride + pageInfo.Extension);
 
                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                using (StreamWriter writer = new StreamWriter(fs, Encoding.UTF8))
@@ -43,7 +44,7 @@ namespace MarkDocGen
          }
       }
 
-       TODO PP (2020-08-25): change RenderNodes to call into "StartParagraph" and "EndParagraph" or something... but.. hm... how do we handle the *content* of the paragraph then? .. Uhm.. we just started one... just continue rendering as normal.
+       //TODO PP (2020-08-25): change RenderNodes to call into "StartParagraph" and "EndParagraph" or something... but.. hm... how do we handle the *content* of the paragraph then? .. Uhm.. we just started one... just continue rendering as normal.
 
       public string RenderNodes(RenderingContext context, IEnumerable<XNode> nodes)
       {
@@ -55,7 +56,7 @@ namespace MarkDocGen
 
          foreach (var node in nodes)
          {
-            MyTemplate2 template = context.Template;
+            ITemplate template = context.Template;
             switch (node)
             {
                case XText text:
@@ -66,7 +67,7 @@ namespace MarkDocGen
                   switch (el.Name.LocalName)
                   {
                      case "para":
-                        builder.Append(template.RenderPara(context, RenderNodes(context, el.Nodes())));
+                        builder.Append(template.RenderParagraph(context, RenderNodes(context, el.Nodes())));
                         break;
 
                      case "see":
@@ -85,11 +86,11 @@ namespace MarkDocGen
                         break;
 
                      case "c":
-                        builder.Append(template.RenderC(context, RenderNodes(context, el.Nodes())));
+                        builder.Append(template.RenderInlineCode(context, RenderNodes(context, el.Nodes())));
                         break;
 
                      case "code":
-                        builder.Append(template.RenderCode(context, el.Value));
+                        builder.Append(template.RenderCodeBlock(context, el.Value));
                         break;
 
                      case "paramref":

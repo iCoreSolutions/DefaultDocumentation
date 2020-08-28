@@ -33,4 +33,15 @@ namespace DefaultDocumentation.Model
       public IEntity Entity { get; }
 
    }
+
+   internal abstract class MemberDocItem : EntityDocItem
+   {
+      protected MemberDocItem(DocItem parent, IMember member, XElement documentation)
+         : base(parent, member, documentation)
+      {
+         Member = member;
+      }
+
+      public IMember Member { get; }
+   }
 }

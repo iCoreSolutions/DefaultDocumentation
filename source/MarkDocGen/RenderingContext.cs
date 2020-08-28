@@ -8,7 +8,7 @@ namespace MarkDocGen
 {
    class RenderingContext
    {
-      public RenderingContext(DocGen generator, MyTemplate2 template, DocItem currentItem, IFileNameStrategy fileNameStrategy, ILinkResolver linkResolver, ILogger log)
+      public RenderingContext(DocGen generator, ITemplate template, DocItem currentItem, IFileNameStrategy fileNameStrategy, ILinkResolver linkResolver, ILogger log)
       {
          Generator = generator;
          Template = template;
@@ -30,15 +30,15 @@ namespace MarkDocGen
          {
             var current = CurrentItem;
 
-            while (!(current is EntityDocItem) && current.Parent != null)
+            while (!(current is EntityDocItem || current is AssemblyDocItem) && current.Parent != null)
                current = current.Parent;
 
-            return (current as EntityDocItem)?.Entity.Compilation ?? ((current as AssemblyDocItem).Module)?.Compilation;
+            return (current as EntityDocItem)?.Entity.Compilation ?? ((current as AssemblyDocItem)?.Module)?.Compilation;
          }
       }
 
       // TODO PP (2020-08-23): Change to interface
-      public MyTemplate2 Template { get; }
+      public ITemplate Template { get; }
       public DocItem CurrentItem { get; }
       
       public RenderingContext WithItem(DocItem item)

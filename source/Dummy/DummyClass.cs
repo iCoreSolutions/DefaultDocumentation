@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dummy
 {
+
    /// <summary>
    /// This is an interface.
    /// </summary>

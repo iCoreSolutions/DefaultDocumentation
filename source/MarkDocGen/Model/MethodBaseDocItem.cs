@@ -5,7 +5,7 @@ using ICSharpCode.Decompiler.TypeSystem;
 
 namespace DefaultDocumentation.Model
 {
-   internal abstract class MethodBaseDocItem : EntityDocItem, IParameterizedDocItem
+   internal abstract class MethodBaseDocItem : MemberDocItem, IParameterizedDocItem
    {
       public MethodBaseDocItem(DocItem parent, IMethod method, XElement documentation)
          : base(parent, method, documentation)

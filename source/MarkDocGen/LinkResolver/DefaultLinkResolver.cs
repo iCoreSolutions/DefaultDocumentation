@@ -13,6 +13,7 @@ using ICSharpCode.Decompiler.TypeSystem.Implementation;
 
 namespace MarkDocGen
 {
+   // TODO PP (2020-08-28): Have this use the template instead of file name strategy.
    class DefaultLinkResolver : ILinkResolver
    {
       private IFileNameStrategy m_fileNameStrategy;
@@ -24,15 +25,17 @@ namespace MarkDocGen
 
       public InternalLinkModel ResolveLink(RenderingContext context, DocItem item, string text)
       {
-         if (context.Template.GeneratesPage(item))
+         var pageInfo = context.Template.GetPageInfo(item);
+         if (pageInfo.GeneratesPage)
          {
-            var fileName = m_fileNameStrategy.GetFileName(item);
+            var fileName = pageInfo.FileNameOverride == null ? m_fileNameStrategy.GetFileName(item, pageInfo.Extension) : pageInfo.FileNameOverride + pageInfo.Extension;
             return new InternalLinkModel(text ?? context.Template.GetDisplayName(item), fileName, null);
          }
          else
          {
             var pageItem = FindParentPage(context, item);
-            var fileName = "./" + m_fileNameStrategy.GetFileName(pageItem);
+            pageInfo = context.Template.GetPageInfo(pageItem);
+            var fileName = "./" + (pageInfo.FileNameOverride == null ? m_fileNameStrategy.GetFileName(item, pageInfo.Extension) : pageInfo.FileNameOverride + pageInfo.Extension); 
             return new InternalLinkModel(text ?? context.Template.GetDisplayName(item), fileName, item.AnchorId);
          }
       }
@@ -187,7 +190,7 @@ namespace MarkDocGen
       private DocItem FindParentPage(RenderingContext context, DocItem item)
       {
          var current = item;
-         while (!context.Template.GeneratesPage(current) && current.Parent != null)
+         while (!context.Template.GetPageInfo(current).GeneratesPage && current.Parent != null)
          {
             current = current.Parent;
          }

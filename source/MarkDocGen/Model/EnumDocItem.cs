@@ -1,4 +1,6 @@
-﻿using System.Xml.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 using ICSharpCode.Decompiler.CSharp.OutputVisitor;
 using ICSharpCode.Decompiler.Output;
 using ICSharpCode.Decompiler.TypeSystem;
@@ -24,6 +26,8 @@ namespace DefaultDocumentation.Model
       { }
 
       public override DocItemKind Kind => DocItemKind.Enum;
+
+      public new IEnumerable<EnumFieldDocItem> Fields => base.Fields.Cast<EnumFieldDocItem>();
 
       // TODO PP (2020-08-20): Remove commented code. 
       //public override void WriteDocumentation(DocumentationWriter writer)

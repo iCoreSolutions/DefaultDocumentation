@@ -4,6 +4,29 @@ using System.Collections.Generic;
 namespace Dummy.SubDummy.SomeNamespace
 {
    /// <summary>
+   /// This is my sub enum. Real nice.
+   /// </summary>
+   /// <remarks>
+   /// Some remarks about this enum.
+   /// </remarks>
+   public enum MySubEnum
+   {
+      /// <summary>
+      /// The numeber one field
+      /// </summary>
+      One = 1,
+      /// <summary>
+      /// The numeber twelve field
+      /// </summary>
+      Twelve = 12,
+
+      /// <summary>
+      /// The number fourteen field.
+      /// </summary>
+      Fourteen = 14
+   }
+
+   /// <summary>
    /// SumDummy is a class deriving from a nested class.
    /// </summary>
    /// <remarks>

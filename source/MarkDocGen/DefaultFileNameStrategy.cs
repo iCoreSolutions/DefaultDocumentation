@@ -8,7 +8,7 @@ namespace MarkDocGen
 {
    interface IFileNameStrategy
    {
-      string GetFileName(DocItem item);
+      string GetFileName(DocItem item, string extension);
 
    }
    class DefaultFileNameStrategy : IFileNameStrategy
@@ -33,30 +33,13 @@ namespace MarkDocGen
           ["`"] = "_",          
        };
 
-      public string GetFileName(DocItem item)
+      public string GetFileName(DocItem item, string extension)
       {
-         return Clean(item.Id) + Extension;
+         return Clean(item.Id) + extension;
          //string baseName = item.Entity is null ? item.FullName : string.Join(".", GetHierarchy(item).Reverse());
          //return Clean(baseName + Extension);
-      }
-
-      public string Extension => ".md";
-
-      // TODO PP (2020-08-25): Remove commented code.
-      //private IEnumerable<string> GetHierarchy(DocItem item)
-      //{
-      //   // TODO PP (2020-08-20): verify this... GetName does some stuff with operators
-      //   yield return item.SimpleName;// GetName(_entity, NameAmbience);
-
-      //   DocItem parent = item.Parent;
-      //   while (parent is TypeDocItem)
-      //   {
-      //      yield return parent.SimpleName; // GetName(parent._entity, NameAmbience);
-
-      //      parent = parent.Parent;
-      //   }
-      //}
-
+      }      
+    
       private static string Clean(string value)
       {
          foreach (KeyValuePair<string, string> pair in _invalidStrings)

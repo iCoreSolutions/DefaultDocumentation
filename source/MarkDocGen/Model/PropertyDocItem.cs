@@ -7,7 +7,7 @@ using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
-   internal sealed class PropertyDocItem : EntityDocItem, IParameterizedDocItem
+   internal sealed class PropertyDocItem : MemberDocItem, IParameterizedDocItem
    {
       private static readonly CSharpAmbience CodeAmbience = new CSharpAmbience
       {

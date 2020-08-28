@@ -10,7 +10,7 @@ namespace DefaultDocumentation.Model
       public bool HasMultipleNamespaces { get; set; }
 
       public HomeDocItem(DocProject project, string pageName, string name, XElement documentation)
-          : base(project, null, string.Empty, documentation)
+          : base(project, null, "Home", documentation)
       {
          _explicitGenerate = !string.IsNullOrEmpty(pageName) || documentation != null;
       }

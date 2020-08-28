@@ -15,41 +15,6 @@ namespace DefaultDocumentation.Model
 
    internal abstract class DocItem
    {
-      // TODO PP (2020-08-25): Remove commented code.
-      //private static readonly CSharpAmbience FullNameAmbience = new CSharpAmbience
-      //{
-      //   ConversionFlags =
-      //        ConversionFlags.ShowParameterList
-      //        | ConversionFlags.ShowTypeParameterList
-      //        | ConversionFlags.UseFullyQualifiedTypeNames
-      //        | ConversionFlags.ShowDeclaringType
-      //        | ConversionFlags.UseFullyQualifiedEntityNames
-      //};
-
-      //private static readonly CSharpAmbience NameAmbience = new CSharpAmbience
-      //{
-      //   ConversionFlags =
-      //        ConversionFlags.ShowParameterList
-      //        | ConversionFlags.ShowTypeParameterList
-      //};
-
-      //private static readonly CSharpAmbience TypeNameAmbience = new CSharpAmbience
-      //{
-      //   ConversionFlags =
-      //        ConversionFlags.ShowParameterList
-      //        | ConversionFlags.ShowTypeParameterList
-      //        | ConversionFlags.ShowDeclaringType
-      //        | ConversionFlags.UseFullyQualifiedTypeNames
-      //};
-
-      //private static readonly CSharpAmbience EntityNameAmbience = new CSharpAmbience
-      //{
-      //   ConversionFlags =
-      //        ConversionFlags.ShowParameterList
-      //        | ConversionFlags.ShowTypeParameterList
-      //        | ConversionFlags.UseFullyQualifiedTypeNames
-      //};
-
       public IEnumerable<DocItem> Children => Project.GetChildren(this);
       
       public abstract DocItemKind Kind { get; }
@@ -58,7 +23,7 @@ namespace DefaultDocumentation.Model
       public string Id { get; }
       public XElement Documentation { get; }
       public DocProject Project { get; }
-      public virtual string AnchorId => Id == null ? null : Regex.Replace(Id, @"[`,\(\)\{\}\.\:]", "_");
+      public virtual string AnchorId => Id == null ? null : Regex.Replace(Id, @"[`,\(\)\{\}\.\:<>\*\#]", "_");
       
       public enum DisplayNameFormat
       {
@@ -69,17 +34,12 @@ namespace DefaultDocumentation.Model
 
       protected DocItem(DocProject project, DocItem parent, string id, XElement documentation)
       {
-         // TODO PP (2020-08-20): assert parameters.
          Project = project;
          Parent = parent;
          Id = id;
          if (id.Length > 1 && id[1] == ':')
             
          Documentation = documentation;
-
-         // TODO PP (2020-08-20): Don't like these replaces
-         //FullName = fullName.Replace("<", "&lt;").Replace(">", "&gt;").Replace("this ", string.Empty);
-         //Name = name.Replace("<", "&lt;").Replace(">", "&gt;").Replace("this ", string.Empty);
       }
 
       // TODO PP (2020-08-25): Remove commented code.

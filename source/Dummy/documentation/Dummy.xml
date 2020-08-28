@@ -328,6 +328,29 @@
             <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget luctus dui, nec blandit arcu. Cras ullamcorper suscipit ornare. Nullam euismod placerat arcu ac pharetra. Nulla blandit vestibulum mi vitae sollicitudin. Donec orci nibh, venenatis non velit sed, gravida malesuada dolor. Nam vestibulum ullamcorper dui in faucibus. Fusce rutrum varius tortor, vel laoreet dolor pulvinar sit amet. Phasellus a neque ultricies, egestas nunc eu, facilisis ante. Vestibulum viverra lacus id libero iaculis mattis. Cras ut odio metus.</para> 
             </remarks>
         </member>
+        <member name="T:Dummy.SubDummy.SomeNamespace.MySubEnum">
+            <summary>
+            This is my sub enum. Real nice.
+            </summary>
+            <remarks>
+            Some remarks about this enum.
+            </remarks>
+        </member>
+        <member name="F:Dummy.SubDummy.SomeNamespace.MySubEnum.One">
+            <summary>
+            The numeber one field
+            </summary>
+        </member>
+        <member name="F:Dummy.SubDummy.SomeNamespace.MySubEnum.Twelve">
+            <summary>
+            The numeber twelve field
+            </summary>
+        </member>
+        <member name="F:Dummy.SubDummy.SomeNamespace.MySubEnum.Fourteen">
+            <summary>
+            The number fourteen field.
+            </summary>
+        </member>
         <member name="T:Dummy.SubDummy.SomeNamespace.SubDummy`1">
             <summary>
             SumDummy is a class deriving from a nested class.

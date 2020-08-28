@@ -1,21 +1,22 @@
-﻿using System.Xml.Linq;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Xml.Linq;
 using ICSharpCode.Decompiler.TypeSystem;
 using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
-   internal sealed class EnumFieldDocItem : EntityDocItem
+   internal sealed class EnumFieldDocItem : FieldDocItem
    {
-      public IField Field { get; }
-
       public EnumFieldDocItem(EnumDocItem parent, IField field, XElement documentation)
           : base(parent, field, documentation)
       {
-         Field = field;         
       }
 
       public override DocItemKind Kind => DocItemKind.EnumField;
 
+      public object FieldValue => Field.GetConstantValue();
+            
       // TODO PP (2020-08-20): Remove commented code.
       //public override bool GeneratePage => false;
 

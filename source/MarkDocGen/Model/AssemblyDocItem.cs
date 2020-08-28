@@ -8,6 +8,19 @@ using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
+   /*
+    * Type Name: 
+    * Declaration
+    * Without generic arguments(?)
+    * With generic arguments
+    * Declaration
+    * 
+    * With/Without namespace
+    * 
+    * Member Name:
+    * + With or without parameter list
+    * 
+    */
    internal class AssemblyDocItem : DocItem
    {
       public AssemblyDocItem(DocProject project, DocItem parent, IModule module, XElement documentation) 

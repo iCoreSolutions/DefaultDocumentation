@@ -34,10 +34,12 @@ namespace MarkDocGen
       }
 
       private readonly DocItemCollection _docItems = new DocItemCollection();
-
+      private readonly HomeDocItem _homeItem;
       public DocProject(ILogger logger)
       {
          Log = logger ?? NullLogger.Instance;
+         _homeItem = new HomeDocItem(this, "Home", "Home", null);
+         _docItems.Add(_homeItem);
       }
 
       public ILogger Log { get; }
@@ -65,7 +67,7 @@ namespace MarkDocGen
             return documentation != null;
          }
 
-         AssemblyDocItem assemblyDocItem = new AssemblyDocItem(this, null, _decompiler.TypeSystem.MainModule, ConvertToDocumentation(documentationProvider.GetDocumentation($"T:{_decompiler.TypeSystem.MainModule.AssemblyName}.AssemblyDoc")));
+         AssemblyDocItem assemblyDocItem = new AssemblyDocItem(this, _homeItem, _decompiler.TypeSystem.MainModule, ConvertToDocumentation(documentationProvider.GetDocumentation($"T:{_decompiler.TypeSystem.MainModule.AssemblyName}.AssemblyDoc")));
          // TODO PP (2020-08-20): Remove commented code.
          //HomeDocItem homeDocItem = new HomeDocItem(
          //    homePageName,

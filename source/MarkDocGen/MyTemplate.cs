@@ -9,35 +9,58 @@ using DefaultDocumentation.Model;
 using ICSharpCode.Decompiler.CSharp.OutputVisitor;
 using ICSharpCode.Decompiler.Output;
 using ICSharpCode.Decompiler.TypeSystem;
+using Newtonsoft.Json;
 
 namespace MarkDocGen
 {
-   interface ITemplate
-   {
-      bool GeneratesPage(DocItem item);
-   }
-
    class MyTemplate2 : ITemplate
    {
-      // TODO PP (2020-08-23): Allow to return extension as well...
-      public virtual bool GeneratesPage(DocItem item)
+      // TODO PP (2020-08-28): idea: Return "(IEnumerable)<IPageRenderer>" instead that contains information as well as a delegate to perform the rendering. (Allows multiple pages to be rendered per item (however, which is the link target?), as well as a single place that determines IF and WHAT to render instead of two!)
+      public virtual PageInfo GetPageInfo(DocItem item)
       {
-         return item is TypeDocItem ||
-                item is MethodOverloadGroupDocItem ||
-                item is MethodDocItem mdi && !(mdi.Parent is OverloadGroupDocItem) ||
-                item is PropertyDocItem pdi && !(pdi.Parent is OverloadGroupDocItem) ||
-                item is PropertyOverloadGroupDocItem ||
-                item is ConstructorDocItem cdi && !(cdi.Parent is OverloadGroupDocItem) ||
-                item is ConstructorOverloadGroupDocItem ||
-                item is NamespaceDocItem;
-                ;                
+         if (item is TypeDocItem ||
+             item is MethodOverloadGroupDocItem ||
+             item is MethodDocItem mdi && !(mdi.Parent is OverloadGroupDocItem) ||
+             item is PropertyDocItem pdi && !(pdi.Parent is OverloadGroupDocItem) ||
+             item is PropertyOverloadGroupDocItem ||
+             item is ConstructorDocItem cdi && !(cdi.Parent is OverloadGroupDocItem) ||
+             item is ConstructorOverloadGroupDocItem ||
+             item is NamespaceDocItem || 
+             item is FieldDocItem || 
+             item is OperatorDocItem odi && !(odi.Parent is OverloadGroupDocItem) ||
+             item is OperatorOverloadGroupDocItem)
+         {
+            return new PageInfo(".md");
+         }
+
+         if (item is HomeDocItem)
+         {
+            return new PageInfo(".md", "index");
+         }
+
+         return PageInfo.NoPage;
+      }
+
+      private string GetTitle(DocItem item)
+      {
+         return item switch
+         {
+            TypeDocItem typeItem => $"{GetDisplayName(item)} {typeItem.Type.Kind}",
+            OverloadGroupDocItem og => $"{GetDisplayName(og.Children.First())} {og.Children.First().Kind}",
+            NamespaceDocItem namespaceItem => $"{GetDisplayName(namespaceItem)} Namespace",
+            EntityDocItem entityItem => $"{GetDisplayName(item)} {entityItem.Entity.SymbolKind}",
+            _ => GetDisplayName(item)
+         };         
       }
 
       public virtual void RenderPage(RenderingContext context, TextWriter writer)
       {
-         // TODO PP (2020-08-24): Add namespace (top level item)
          switch (context.CurrentItem)
          {
+            case EnumDocItem enumDocItem:
+               RenderEnum(context, enumDocItem, writer);
+               break;
+
             case TypeDocItem classDocItem:
                RenderType(context, classDocItem, writer);
                break;
@@ -48,6 +71,10 @@ namespace MarkDocGen
 
             case PropertyOverloadGroupDocItem pgds:
                RenderProperties(context, pgds, writer);
+               break;
+
+            case FieldDocItem field:
+               RenderField(context, field, writer);
                break;
 
             case MethodDocItem mdi:
@@ -78,15 +105,46 @@ namespace MarkDocGen
                RenderNamespace(context, ndi, writer);
                break;
 
+            case HomeDocItem hdi:
+               RenderHomePage(context, hdi, writer);
+               break;
+
             default:
                throw new NotImplementedException($"Unsupported page {context.CurrentItem.GetType()}");
          }
       }
 
+      private void RenderHomePage(RenderingContext context, HomeDocItem hdi, TextWriter writer)
+      {
+         foreach (var ns in hdi.AllNamespaces())
+         {
+            writer.WriteLine($"* {RenderLink(context, context.ResolveLink(ns))}");
+         }
+      }
 
+
+      private string GetSidebarLabel(DocItem item)
+      {
+         return item switch
+         {
+            ConstructorDocItem _ => "Constructor",
+            ConstructorOverloadGroupDocItem _ => "Constructors",
+            NamespaceDocItem nsItem => nsItem.Name,
+            _ => GetDisplayName(item)
+         };
+      }
 
       private void WriteHeader(RenderingContext context, DocItem docItem, TextWriter writer)
       {
+         if (GetPageInfo(docItem).GeneratesPage)
+         {
+            writer.WriteLine("---");
+            writer.WriteLine($"id: {docItem.AnchorId}");
+            writer.WriteLine($"title: \"{GetTitle(docItem)}\"");
+            writer.WriteLine($"sidebar_label: \"{GetSidebarLabel(docItem)}\"");
+            writer.WriteLine("---");
+            writer.WriteLine();
+         }
       }
 
       private static readonly CSharpAmbience CodeAmbience = new CSharpAmbience
@@ -156,9 +214,18 @@ namespace MarkDocGen
                return EntityNameAmbience.ConvertSymbol(symbol.Symbol);
             case NamespaceDocItem ns:
                return ns.Name;
+            case AssemblyDocItem asm:
+               return asm.Module.AssemblyName + ".dll";               
+            
+            case OverloadGroupDocItem ogd:
+               // TODO PP (2020-08-28): Incorrect... this will contain the parameter for methods. Need just the simple name here. Introduce name property on items again?
+               return GetDisplayName(ogd.Children.First());
+
+            case HomeDocItem hdi:
+               return "Home";
             default:
                throw new NotSupportedException($"Can't get display name for doc item of type {item}");
-         }         
+         }
 
       }
 
@@ -185,27 +252,28 @@ namespace MarkDocGen
       {
          writer.Write($"## {Escape(title)}");
          if (!String.IsNullOrEmpty(anchor))
-            writer.Write($"<a name=\"{anchor}\" />");
+            writer.Write($" <a name=\"{anchor}\"></a>");
+         writer.WriteLine();
          writer.WriteLine();
       }
 
       private void RenderMethods(RenderingContext context, MethodBaseOverloadGroupDocItem item, TextWriter writer)
       {
-         if (item is ConstructorOverloadGroupDocItem)
-            writer.WriteLine($"## {GetDisplayName(item.Parent)} Constructors");
-         else            
-            writer.WriteLine($"## {GetDisplayName(item.Parent)}.{item.Members.First().Name} Method");
-
          WriteHeader(context, item, writer);
+
+         if (item is ConstructorOverloadGroupDocItem)
+            writer.WriteLine($"## {Escape(GetDisplayName(item.Parent))} Constructors");
+         else
+            writer.WriteLine($"## {Escape(GetDisplayName(item.Parent))}.{item.Members.First().Name} Method");
 
          // Render summary
          RenderSummary(context, item, writer);
-            
-         writer.WriteLine();            
+
+         writer.WriteLine();
          writer.WriteLine("### Overloads");
 
          RenderTable(context, item.Members.Select(m => ((ILinkModel)context.ResolveLink(m), RenderXmlDoc(context, m.Documentation.GetSummary()))), writer);
-            
+
          foreach (var method in item.Members)
          {
             RenderMethod(context, method, writer);
@@ -214,6 +282,8 @@ namespace MarkDocGen
 
       private void RenderProperties(RenderingContext context, PropertyOverloadGroupDocItem item, TextWriter writer)
       {
+         WriteHeader(context, item, writer);
+
          // Render summary
          RenderSummary(context, item, writer);
 
@@ -238,14 +308,15 @@ namespace MarkDocGen
             writer.WriteLine();
             writer.WriteLine(RenderXmlDoc(context, exampleElement));
          }
-      } 
+      }
 
       private void RenderMethod(RenderingContext context, MethodBaseDocItem item, TextWriter writer)
       {
          // TODO PP (2020-08-25): Write and header only if page.
          WriteHeader(context, item, writer);
 
-         RenderAnchorTitle($"{GetDisplayName(item)} {item.Method.SymbolKind}", item.AnchorId, writer);         
+         if (!GetPageInfo(item).GeneratesPage)
+            RenderAnchorTitle($"{GetDisplayName(item)} {item.Method.SymbolKind}", item.AnchorId, writer);
 
          writer.WriteLine();
          writer.Write(RenderXmlDoc(context, item.Documentation.GetSummary()));
@@ -274,7 +345,7 @@ namespace MarkDocGen
          WriteHeader(context, item, writer);
 
          // TODO PP (2020-08-24): Add anchor... perhaps WriteTitle method?
-         RenderAnchorTitle($"{item.Name} {item.Property.SymbolKind}", item.AnchorId, writer);
+         //RenderAnchorTitle($"{item.Name} {item.Property.SymbolKind}", item.AnchorId, writer);
 
          RenderSummary(context, item, writer);
          writer.WriteLine();
@@ -289,7 +360,35 @@ namespace MarkDocGen
          writer.WriteLine("## Property Value");
          writer.WriteLine(RenderLink(context, context.ResolveTypeLink(item.Property.ReturnType)));
          writer.WriteLine(RenderXmlDoc(context, item.Documentation.GetValue()));
+
+         RenderExceptions(context, item, writer);
+
+         RenderExample(context, item, writer);
+
+         RenderRemarks(context, item, writer);
+
+         RenderSeeAlsos(context, item, writer);
+      }
+      
+      private void RenderField(RenderingContext context, FieldDocItem item, TextWriter writer)
+      {
+         WriteHeader(context, item, writer);
          
+         //RenderAnchorTitle($"{item.Name} {item.Field.SymbolKind}", item.AnchorId, writer);
+
+         RenderSummary(context, item, writer);
+         writer.WriteLine();
+
+         writer.WriteLine("```csharp");
+         writer.Write(MethodCodeAmbience.ConvertSymbol(item.Field));
+         writer.WriteLine();
+         writer.WriteLine("```");
+
+         writer.WriteLine("## Field Value");
+         writer.WriteLine();
+         writer.WriteLine(RenderLink(context, context.ResolveTypeLink(item.Field.ReturnType)));
+         writer.WriteLine(RenderXmlDoc(context, item.Documentation.GetValue()));
+
          RenderExceptions(context, item, writer);
 
          RenderExample(context, item, writer);
@@ -299,19 +398,31 @@ namespace MarkDocGen
          RenderSeeAlsos(context, item, writer);
       }
 
-      // TODO PP (2020-08-25): Handle compiler generated members, and accessibility configuration (i.e. only export public members etc)
+      private void WritePageTitle(string title, TextWriter writer)
+      {
+         writer.WriteLine();
+         writer.WriteLine($"## {title}");
+         writer.WriteLine();
+      }
 
       private void RenderNamespace(RenderingContext context, NamespaceDocItem ndi, TextWriter writer)
       {
          WriteHeader(context, ndi, writer);
+         WritePageTitle($"{GetDisplayName(ndi)} Namespace", writer);
 
-         writer.WriteLine($"## {GetDisplayName(ndi)} Namespace");
+         RenderSummary(context, ndi, writer);
+         RenderMemberTable(context, "Classes", ndi.Classes(), writer);
+         RenderMemberTable(context, "Structs", ndi.Structs(), writer);
+         RenderMemberTable(context, "Interfaces", ndi.Interfaces(), writer);
+         RenderMemberTable(context, "Enums", ndi.Enums(), writer);
+         RenderMemberTable(context, "Delegates", ndi.Delegates(), writer);
+         RenderRemarks(context, ndi, writer);
       }
 
       private void RenderSeeAlsos(RenderingContext context, DocItem item, TextWriter writer)
       {
          IEnumerable<XElement> elements = item.Documentation.GetSeeAlsos();
-         if (elements != null && elements.Any() )
+         if (elements != null && elements.Any())
          {
             writer.WriteLine($"### See also");
             foreach (var element in elements)
@@ -386,14 +497,60 @@ namespace MarkDocGen
          }
       }
 
+      private void RenderEnum(RenderingContext context, EnumDocItem item, TextWriter writer)
+      {
+         WriteHeader(context, item, writer);
+         writer.WriteLine($"## {GetDisplayName(item)} Enum");
+
+         RenderSummary(context, item, writer);
+
+         writer.WriteLine("```csharp");
+         writer.Write(CodeAmbience.ConvertSymbol(item.Type));
+         IType enumType = item.Type.GetEnumUnderlyingType();
+         writer.WriteLine(enumType.IsKnownType(KnownTypeCode.Int32) ? string.Empty : $" : {enumType.FullName}");
+         writer.WriteLine("```");
+
+         // attribute
+         foreach (var field in item.Fields)
+         {
+            writer.WriteLine($"* ***TODO - NOT YET IMPLEMENTED***  {field.FieldValue}");
+            // TODO PP (2020-08-26): Implement rendering of table.
+         }
+
+         RenderExample(context, item, writer);
+
+         RenderRemarks(context, item, writer);
+
+         RenderSeeAlsos(context, item, writer);
+      }
+
+      private void RenderAssemblyAndNamespaceInfo(RenderingContext context, DocItem item, TextWriter writer)
+      {
+         var namespaceItem = item.ContainingNamespace();
+         var assemblyItem = item.ContainingAssembly();
+
+         if (namespaceItem != null)
+         {
+            writer.WriteLine($"Namespace: {RenderLink(context, context.ResolveLink(namespaceItem))}{(assemblyItem == null ? "" : "<br/>")}");
+         }
+
+         if (assemblyItem != null)
+         {
+            writer.WriteLine($"Assembly: {RenderLink(context, context.ResolveLink(assemblyItem))}");
+         }
+      }
+
       private void RenderType(RenderingContext context, TypeDocItem item, TextWriter writer)
       {
          WriteHeader(context, item, writer);
+         
+         if (!GetPageInfo(item).GeneratesPage)
+            RenderAnchorTitle($"{item.Name} {item.Type.Kind}", item.AnchorId, writer);
 
-         RenderAnchorTitle($"{item.Name} {item.Type.Kind}", item.AnchorId, writer);
+         RenderAssemblyAndNamespaceInfo(context, item, writer);
 
          writer.WriteLine();
-         
+
          // TODO PP (2020-08-24): Add namespace and assembly if multiple assemblies in project!
 
          writer.Write(RenderXmlDoc(context, item.Documentation.GetSummary()));
@@ -426,7 +583,7 @@ namespace MarkDocGen
             writer.Write("Inheritance ");
             writer.Write(string.Join(" &#129106; ", item.Type.GetNonInterfaceBaseTypes().Where(t => t != item.Type).Select(t => RenderLink(context, context.ResolveTypeLink(t, null)))));
             writer.Write(" &#129106; ");
-            writer.Write(item.Name);
+            writer.Write(Escape(item.Name));
             writer.WriteLine("  ");
             needBreak = true;
          }
@@ -467,39 +624,28 @@ namespace MarkDocGen
 
          }
 
+         // TODO PP (2020-08-26): Remarks here maybe?
+
          // TODO PP (2020-08-24): Fix properties/methods/fields/operators/etc... Similar beasts... perhaps we can do something here?
-         if (item.Fields.Any())
-         {
-            writer.WriteLine();
-            writer.WriteLine("## Fields");
+         RenderMemberTable(context, "Fields", item.Fields, writer);
 
-            RenderTable(context, item.Fields.Select(field => ((ILinkModel)context.ResolveLink(field), RenderXmlDoc(context, field.Documentation.GetSummary()))), writer);
-         }
+         RenderMemberTable(context, "Properties", item.AllProperties(), writer);
 
-         if (item.AllProperties().Any())
-         {
-            writer.WriteLine();
-            writer.WriteLine("## Properties");
+         RenderMemberTable(context, "Methods", item.AllMethods(), writer);
 
-            RenderTable(context, item.AllProperties().Select(prop => ((ILinkModel)context.ResolveLink(prop), RenderXmlDoc(context, prop.Documentation.GetSummary()))), writer);
-
-         }
-
-         if (item.AllMethods().Any())
-         {
-            writer.WriteLine();
-            writer.WriteLine("## Methods");
-            RenderTable(context, item.AllMethods().Select(prop => ((ILinkModel)context.ResolveLink(prop), RenderXmlDoc(context, prop.Documentation.GetSummary()))), writer);
-         }
-
-         if (item.AllOperators().Any())
-         {
-            writer.WriteLine();
-            writer.WriteLine("## Operators");
-            RenderTable(context, item.AllOperators().Select(prop => ((ILinkModel)context.ResolveLink(prop), RenderXmlDoc(context, prop.Documentation.GetSummary()))), writer);
-         }
+         RenderMemberTable(context, "Operators", item.AllOperators(), writer);
 
          RenderSeeAlsos(context, item, writer);
+      }
+
+      private void RenderMemberTable(RenderingContext context, string title, IEnumerable<DocItem> items, TextWriter writer)
+      {
+         if (items.Any())
+         {
+            writer.WriteLine();
+            writer.WriteLine($"## {title}");
+            RenderTable(context, items.Select(m => ((ILinkModel)context.ResolveLink(m), RenderXmlDoc(context, m.Documentation.GetSummary()))), writer);
+         }
       }
 
       private void RenderTable(RenderingContext context, IEnumerable<(ILinkModel Link, string Summary)> items, TextWriter writer)
@@ -514,7 +660,7 @@ namespace MarkDocGen
                writer.Write('|');
                writer.Write(RenderLink(context, item.Link));
                writer.Write('|');
-               writer.Write(item.Summary?.Trim().Replace("\r\n", " ").Replace("\n", " "));
+               writer.Write(item.Summary?.Trim().Replace("\r\n", "<br/>").Replace("\n", "<br/>"));
                writer.WriteLine("|");
             }
 
@@ -545,7 +691,11 @@ namespace MarkDocGen
 
       private string Escape(string text)
       {
-         return text.Replace("<", "&lt;").Replace(">", "&gt;");
+         return text
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("*", "\\*")
+            .Replace("_", "\\_");
       }
 
       private string RenderTypeLink(RenderingContext context, TypeLinkModel link)
@@ -572,7 +722,7 @@ namespace MarkDocGen
          return Escape(text);
       }
 
-      public string RenderPara(RenderingContext context, string content)
+      public string RenderParagraph(RenderingContext context, string content)
       {
          if (!content.EndsWith("\n"))
             content += Environment.NewLine;
@@ -581,12 +731,12 @@ namespace MarkDocGen
          return content;
       }
 
-      public string RenderC(RenderingContext context, string content)
+      public string RenderInlineCode(RenderingContext context, string content)
       {
          return $"`{content}`";
       }
 
-      public string RenderCode(RenderingContext context, string code)
+      public string RenderCodeBlock(RenderingContext context, string code)
       {
          return $"```csharp\r\n{code.Trim()}\r\n```";
       }

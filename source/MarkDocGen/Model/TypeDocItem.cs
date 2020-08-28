@@ -43,7 +43,7 @@ namespace DefaultDocumentation.Model
 
       public IEnumerable<PropertyDocItem> Properties => Children.OfType<PropertyDocItem>().OrderBy(property => property.Name);
 
-      public IEnumerable<FieldDocItem> Fields => Children.OfType<FieldDocItem>().OrderBy(item => item.Name);
+      public virtual IEnumerable<FieldDocItem> Fields => Children.OfType<FieldDocItem>().OrderBy(item => item.Name);
 
 
    }
