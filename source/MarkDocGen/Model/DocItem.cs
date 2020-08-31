@@ -22,7 +22,7 @@ namespace DefaultDocumentation.Model
       public string Id { get; }
       public XElement Documentation { get; }
       public DocProject Project { get; }
-      public virtual string AnchorId => Id == null ? null : Regex.Replace(Id, @"[`,\(\)\{\}\.\:<>\*\#]", "_");
+      public virtual string AnchorId {get; }
       
       public enum DisplayNameFormat
       {
@@ -36,8 +36,9 @@ namespace DefaultDocumentation.Model
          Project = project;
          Parent = parent;
          Id = id;
-         if (id.Length > 1 && id[1] == ':')
-            
+         AnchorId = Id == null ? null : Regex.Replace(Id, @"[`,\(\)\{\}\.\:<>\*\#]", "_");
+         
+         //if (id.Length > 1 && id[1] == ':')            
          Documentation = documentation;
       }
    }

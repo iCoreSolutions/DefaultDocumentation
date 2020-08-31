@@ -34,6 +34,10 @@ namespace MarkDocGen
             {
                string filePath = Path.Combine(outputDirectory, renderer.GetFileName(item));
 
+               Log.LogDebug("Generating {File}", filePath);
+               if (File.Exists(filePath))
+                  throw new InvalidOperationException($"Internal error; The file {filePath} already exists. Duplicate file names generated?");
+
                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                using (StreamWriter writer = new StreamWriter(fs, Encoding.UTF8))
                {

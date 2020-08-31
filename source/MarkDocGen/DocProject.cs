@@ -7,8 +7,6 @@ using ICSharpCode.Decompiler.Output;
 using ICSharpCode.Decompiler.TypeSystem;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Scriban;
-using Scriban.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -94,7 +92,7 @@ namespace MarkDocGen
                _ => throw new NotSupportedException()
             };
 
-            foreach (var group in type.Methods.Cast<IEntity>().Concat(type.Properties).GroupBy(m => m.Name))
+            foreach (var group in type.Methods.Cast<IEntity>().Concat(type.Properties).Where(m => m.Accessibility == Accessibility.Public).GroupBy(m => m.Name))
             {
                if (group.Count() == 1)
                {
@@ -147,7 +145,7 @@ namespace MarkDocGen
                }
             }
 
-            foreach (IEntity entity in Enumerable.Empty<IEntity>().Concat(type.Fields).Concat(type.Events))
+            foreach (IEntity entity in Enumerable.Empty<IEntity>().Concat(type.Fields).Concat(type.Events).Where(m => m.Accessibility == Accessibility.Public))
             {
                if (TryGetDocumentation(entity, out documentation))
                {

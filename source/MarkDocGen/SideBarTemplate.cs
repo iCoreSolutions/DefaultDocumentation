@@ -111,7 +111,10 @@ namespace MarkDocGen
 
       private string GetRef(DocItem item)
       {
-         return $"{DirectoryPrefix}/{item.AnchorId}";
+         if (DirectoryPrefix != null)
+            return $"{DirectoryPrefix}/{item.AnchorId}";
+         else
+            return item.AnchorId;
       }
 
       public override string GetDisplayName(DocItem item)

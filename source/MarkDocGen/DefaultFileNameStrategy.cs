@@ -35,9 +35,11 @@ namespace MarkDocGen
 
       public string GetFileName(DocItem item, string extension)
       {
+         string id = item.Id;
+         if (item is MethodBaseDocItem mdi)
+            return Clean("M:" + mdi.Method.ReflectionName) + extension;         
+
          return Clean(item.Id) + extension;
-         //string baseName = item.Entity is null ? item.FullName : string.Join(".", GetHierarchy(item).Reverse());
-         //return Clean(baseName + Extension);
       }      
     
       private static string Clean(string value)

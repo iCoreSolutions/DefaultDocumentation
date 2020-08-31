@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MarkDocGen": {
+      "commandName": "Project",
+      "commandLineArgs": "-o \"F:\\WIP\\d\\docs\\iCoreCodedApi\" f:\\etwork\\bin\\icore.public.types.dll f:\\etwork\\bin\\icore.public.entities.dll --sidebar-link-prefix \"iCoreCodedApi\""
+    }
+  }
+}
