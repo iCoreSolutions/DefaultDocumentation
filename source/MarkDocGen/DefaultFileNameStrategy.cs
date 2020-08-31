@@ -35,6 +35,7 @@ namespace MarkDocGen
 
       public string GetFileName(DocItem item, string extension)
       {
+         // TODO PP (2020-08-31): This is actually pretty specific to the Docusaurus template.. We should probably just move this into the template and remove this I think... maybe... hmm... 
          string id = item.Id;
          if (item is MethodBaseDocItem mdi)
             return Clean("M:" + mdi.Method.ReflectionName) + extension;         

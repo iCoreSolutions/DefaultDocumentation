@@ -11,6 +11,7 @@ using System.Xml.Linq;
 
 namespace MarkDocGen
 {
+
    // TODO PP (2020-08-23): Rename and stuff.
    class DocGen
    {
@@ -50,51 +51,53 @@ namespace MarkDocGen
 
        //TODO PP (2020-08-25): change RenderNodes to call into "StartParagraph" and "EndParagraph" or something... but.. hm... how do we handle the *content* of the paragraph then? .. Uhm.. we just started one... just continue rendering as normal.
 
-      public string RenderNodes(RenderingContext context, IEnumerable<XNode> nodes)
+      public void RenderNodes(RenderingContext context, IEnumerable<XNode> nodes, IXmlDocWriter renderer, bool trim = true)
       {
          if (nodes == null || !nodes.Any())
-            return null;
+            return;
 
-         StringBuilder builder = new StringBuilder();
          var parent = context.CurrentItem;
-
+         
          foreach (var node in nodes)
          {
             ITemplate template = context.Template;
             switch (node)
             {
                case XText text:
-                  builder.Append(template.RenderText(context, text.Value));
+                  renderer.WriteText(context, text.Value);
                   break;
 
                case XElement el:
                   switch (el.Name.LocalName)
                   {
+                     // TODO PP (2020-08-31): Add support for support <b>, <i>, <em>, <typeparamref>, <list>
                      case "para":
-                        builder.Append(template.RenderParagraph(context, RenderNodes(context, el.Nodes())));
+                        renderer.WriteStartParagraph();
+                        RenderNodes(context, el.Nodes(), renderer);
+                        renderer.WriteEndParagraph();
                         break;
 
                      case "see":
                         if (el.Attribute("cref") != null)
                         {
-                           var link = context.ResolveCrefLink(el.Attribute("cref").Value, RenderNodes(context, el.Nodes()));
-                           builder.Append(template.RenderLink(context, link));
+                           var link = context.ResolveCrefLink(el.Attribute("cref").Value, String.IsNullOrWhiteSpace(el.Value) ? null : el.Value);
+                           renderer.WriteLink(context, link);                           
                         }
                         else if (el.Attribute("langword") != null)
                         {
                            var link = context.ResolveLangWordLink(el.GetLangWord());
-                           builder.Append(template.RenderLink(context, link));
+                           renderer.WriteLink(context, link);
                         }
                         else
                            throw new NotImplementedException("Logwarning");
                         break;
 
                      case "c":
-                        builder.Append(template.RenderInlineCode(context, RenderNodes(context, el.Nodes())));
+                        renderer.WriteInlineCode(context, el.Value);
                         break;
 
                      case "code":
-                        builder.Append(template.RenderCodeBlock(context, el.Value));
+                        renderer.WriteCodeBlock(context, el.Value);
                         break;
 
                      case "paramref":
@@ -107,19 +110,20 @@ namespace MarkDocGen
                               if (parameter == null)
                               {
                                  // TODO PP (2020-08-23): Log warning (invalid paramref)
-                                 builder.Append(template.RenderText(context, name));
+                                 Log.LogWarning("Invalid paramref to parameter \"{Name}\" in {CurrentItem}.", name, context.CurrentItem.Id);
+                                 renderer.WriteText(context, name);
                               }
                               else
                               {
                                  var link = context.ResolveLink(parent, parameter.Name);
                                  if (link != null)
                                  {
-                                    builder.Append(template.RenderParamRef(context, link));
+                                    renderer.WriteLink(context, link);
                                  }
                                  else
                                  {
-                                    // TODO PP (2020-08-23): Add warning, non-existing link!?
-                                    builder.Append(template.RenderText(context, parameter.Name));
+                                    Log.LogWarning("Invalid paramref to parameter \"{Name}\" in {CurrentItem}.", name, context.CurrentItem.Id);
+                                    renderer.WriteText(context, parameter.Name);
                                  }
                               }
                            }
@@ -134,34 +138,35 @@ namespace MarkDocGen
                         }
                         break;
                      default:
-                        using (StringWriter writer = new StringWriter())
-                        {
-                           writer.Write("<");
-                           writer.Write(el.Name.LocalName);
-                           if (el.HasAttributes)
-                           {
-                              foreach (var attr in el.Attributes())
-                              {
-                                 writer.Write(' ');
-                                 writer.Write(attr.Name.LocalName);
-                                 writer.Write("=\"");
-                                 writer.Write(attr.Value);
-                                 writer.Write('\"');
-                              }
-                           }
-                           if (el.IsEmpty)
-                           {
-                              writer.Write("/>");
-                           }
-                           else
-                           {
-                              writer.Write('>');
-                              writer.Write(RenderNodes(context, el.Nodes()));
-                              writer.Write($"</{el.Name.LocalName}>");
-                           }
+                        Log.LogWarning("Unsupported XML element <{ElementName}> in {CurrentItem}.", el.Name.LocalName, context.CurrentItem.Id);
+                        //using (StringWriter writer = new StringWriter())
+                        //{
+                        //   writer.Write("<");
+                        //   writer.Write(el.Name.LocalName);
+                        //   if (el.HasAttributes)
+                        //   {
+                        //      foreach (var attr in el.Attributes())
+                        //      {
+                        //         writer.Write(' ');
+                        //         writer.Write(attr.Name.LocalName);
+                        //         writer.Write("=\"");
+                        //         writer.Write(attr.Value);
+                        //         writer.Write('\"');
+                        //      }
+                        //   }
+                        //   if (el.IsEmpty)
+                        //   {
+                        //      writer.Write("/>");
+                        //   }
+                        //   else
+                        //   {
+                        //      writer.Write('>');
+                        //      writer.Write(RenderNodes(context, el.Nodes()));
+                        //      writer.Write($"</{el.Name.LocalName}>");
+                        //   }
 
-                           builder.Append(writer.ToString());
-                        }
+                        //   builder.Append(writer.ToString());
+                        //}
 
                         break;
                   }
@@ -172,8 +177,6 @@ namespace MarkDocGen
             }
 
          }
-
-         return builder.ToString();
       }
    }
 }

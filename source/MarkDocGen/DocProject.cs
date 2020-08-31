@@ -53,8 +53,8 @@ namespace MarkDocGen
       }
 
       private void CollectDocItems(CSharpDecompiler _decompiler, XmlDocumentationProvider documentationProvider)
-      {
-         static XElement ConvertToDocumentation(string documentationString) => documentationString is null ? null : XElement.Parse($"<doc>{documentationString}</doc>");
+      {         
+         static XElement ConvertToDocumentation(string documentationString) => documentationString is null ? null : XElement.Parse($"<doc>{documentationString}</doc>", LoadOptions.None);
 
          bool TryGetDocumentation(IEntity entity, out XElement documentation)
          {

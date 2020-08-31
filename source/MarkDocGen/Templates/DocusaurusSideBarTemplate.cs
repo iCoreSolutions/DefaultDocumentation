@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DefaultDocumentation.Model;
@@ -7,40 +6,16 @@ using Newtonsoft.Json.Linq;
 
 namespace MarkDocGen
 {
-   abstract class TemplateBase : ITemplate
-   {
-      private readonly List<IPageRenderer> m_pageRenderers = new List<IPageRenderer>();
-
-      public TemplateBase()
-      {
-      }
-
-      public IReadOnlyList<IPageRenderer> PageRenderers => m_pageRenderers;
-
-      protected void AddRenderer(IPageRenderer renderer)
-      {
-         m_pageRenderers.Add(renderer);
-      }
-
-      public abstract string GetDisplayName(DocItem item);      
-      public abstract string RenderCodeBlock(RenderingContext context, string code);
-      public abstract string RenderInlineCode(RenderingContext context, string content);
-      public abstract string RenderLink(RenderingContext context, ILinkModel link);
-      public abstract string RenderParagraph(RenderingContext context, string content);
-      public abstract string RenderParamRef(RenderingContext context, ILinkModel link);
-      public abstract string RenderText(RenderingContext context, string text);
-   }
-
-   class SideBarTemplate : TemplateBase
+   class DocusaurusSideBarTemplate : TemplateBase
    {
       public ITemplate MainTemplate { get; }
       public string DirectoryPrefix { get; }
 
-      public SideBarTemplate(ITemplate mainTemplate, string directoryPrefix)
+      public DocusaurusSideBarTemplate(ITemplate mainTemplate, string directoryPrefix)
       {
          MainTemplate = mainTemplate;
          DirectoryPrefix = directoryPrefix;
-         AddRenderer(new PageRenderer<HomeDocItem>(RenderPage, _ => "Sidebar.json", isLinkTarget: _ => false));
+         AddRenderer(new TextPageRenderer<HomeDocItem>(RenderPage, _ => "Sidebar.json", isLinkTarget: _ => false));
       }
 
       public void RenderPage(RenderingContext context, DocItem item, TextWriter writer)
@@ -52,7 +27,7 @@ namespace MarkDocGen
             nsSidebar.Add(GetRef(ns));
 
             // TODO PP (2020-08-28): Ordering
-            foreach (var member in ns.Children.OfType<TypeDocItem>())
+            foreach (var member in ns.Children.OfType<TypeDocItem>().OrderBy(t => t.Name))
             {
                var typeCategory = AddCategory(nsSidebar, MainTemplate.GetDisplayName(member));
                typeCategory.Add(GetRef(member));
@@ -122,34 +97,5 @@ namespace MarkDocGen
          return item.Id;
       }
 
-      public override string RenderCodeBlock(RenderingContext context, string code)
-      {
-         throw new NotImplementedException();
-      }
-
-      public override string RenderInlineCode(RenderingContext context, string content)
-      {
-         throw new NotImplementedException();
-      }
-
-      public override string RenderLink(RenderingContext context, ILinkModel link)
-      {
-         throw new NotImplementedException();
-      }
-
-      public override string RenderParagraph(RenderingContext context, string content)
-      {
-         throw new NotImplementedException();
-      }
-
-      public override string RenderParamRef(RenderingContext context, ILinkModel link)
-      {
-         throw new NotImplementedException();
-      }
-
-      public override string RenderText(RenderingContext context, string text)
-      {
-         throw new NotImplementedException();
-      }
    }
 }

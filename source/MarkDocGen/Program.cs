@@ -38,8 +38,9 @@ namespace MarkDocGen
 
       static void Run(Options opts)
       {
+         // TODO PP (2020-08-31): Modify logger format to be easily parseable by build environment, i.e. lines starting with "Error:", "Warning:" etc.
          var logger = new LoggerConfiguration()
-            .WriteTo.Console().MinimumLevel.Verbose().CreateLogger();
+            .WriteTo.Console().MinimumLevel.Is(Serilog.Events.LogEventLevel.Information).CreateLogger();
 
          Microsoft.Extensions.Logging.ILogger msLog = new SerilogLoggerProvider(logger).CreateLogger("log");
          DocProject project = new DocProject(msLog);
@@ -88,7 +89,7 @@ namespace MarkDocGen
 
          generator.Generate(project, template, opts.OutputDirectory);
 
-         SideBarTemplate sbt = new SideBarTemplate(template, opts.SideBarLinkPrefix);
+         DocusaurusSideBarTemplate sbt = new DocusaurusSideBarTemplate(template, opts.SideBarLinkPrefix);
          generator.Generate(project, sbt, opts.OutputDirectory);
       }
 

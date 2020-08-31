@@ -4,18 +4,17 @@ using DefaultDocumentation.Model;
 
 namespace MarkDocGen
 {
-   class PageRenderer<T> : IPageRenderer where T : DocItem
+
+   abstract class PageRenderer<T> : IPageRenderer where T : DocItem
    {
-      private readonly Action<RenderingContext, T, TextWriter> m_renderFunction;
-      private readonly Func<T, string> fileName;
+      private readonly Func<T, string> m_fileName;
       private readonly Predicate<T> m_supports;
       private readonly Predicate<T> m_isLinkTarget;
 
-      public PageRenderer(Action<RenderingContext, T, TextWriter> renderFunction, Func<T, string> fileName, Predicate<T> supports = null, Predicate<T> isLinkTarget = null)
+      public PageRenderer(Func<T, string> fileName, Predicate<T> supports = null, Predicate<T> isLinkTarget = null)
       {
          m_isLinkTarget = isLinkTarget;
-         m_renderFunction = renderFunction;
-         this.fileName = fileName;
+         m_fileName = fileName;
          m_supports = supports;
       }
 
@@ -33,9 +32,11 @@ namespace MarkDocGen
       public string GetFileName(DocItem item)
       {
          // TODO PP (2020-08-28): erro check
-         return fileName((T)item);
+         return m_fileName((T)item);
       }
 
-      public void RenderPage(RenderingContext context, DocItem item, TextWriter writer) => m_renderFunction(context, (T)item, writer); 
+      void IPageRenderer.RenderPage(RenderingContext context, DocItem item, TextWriter writer) => RenderPage(context, (T)item, writer);
+
+      public abstract void RenderPage(RenderingContext context, T item, TextWriter writer);
    }
 }
