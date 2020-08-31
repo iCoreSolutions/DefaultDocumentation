@@ -11,11 +11,9 @@ using System.Xml.Linq;
 
 namespace MarkDocGen
 {
-
-   // TODO PP (2020-08-23): Rename and stuff.
-   class DocGen
+   class DocumentationGenerator
    {
-      public DocGen(IFileNameStrategy fileNameStrategy, ILinkResolver linkResolver, ILogger log)
+      public DocumentationGenerator(IFileNameStrategy fileNameStrategy, ILinkResolver linkResolver, ILogger log)
       {
          FileNameStrategy = fileNameStrategy;
          LinkResolver = linkResolver;
@@ -49,9 +47,7 @@ namespace MarkDocGen
          }
       }
 
-       //TODO PP (2020-08-25): change RenderNodes to call into "StartParagraph" and "EndParagraph" or something... but.. hm... how do we handle the *content* of the paragraph then? .. Uhm.. we just started one... just continue rendering as normal.
-
-      public void RenderNodes(RenderingContext context, IEnumerable<XNode> nodes, IXmlDocWriter renderer, bool trim = true)
+      public void RenderNodes(RenderingContext context, IEnumerable<XNode> nodes, IXmlDocWriter renderer)
       {
          if (nodes == null || !nodes.Any())
             return;
@@ -109,7 +105,6 @@ namespace MarkDocGen
                               var parameter = pdi.Parameters.FirstOrDefault(p => p.Name == name);
                               if (parameter == null)
                               {
-                                 // TODO PP (2020-08-23): Log warning (invalid paramref)
                                  Log.LogWarning("Invalid paramref to parameter \"{Name}\" in {CurrentItem}.", name, context.CurrentItem.Id);
                                  renderer.WriteText(context, name);
                               }
@@ -118,6 +113,7 @@ namespace MarkDocGen
                                  var link = context.ResolveLink(parent, parameter.Name);
                                  if (link != null)
                                  {
+                                    // TODO PP (2020-08-31): Perhaps change to RenderParamRef. We don't use anchors for parameters normally.
                                     renderer.WriteLink(context, link);
                                  }
                                  else

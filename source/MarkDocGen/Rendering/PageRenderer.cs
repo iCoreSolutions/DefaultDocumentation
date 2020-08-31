@@ -31,7 +31,7 @@ namespace MarkDocGen
 
       public string GetFileName(DocItem item)
       {
-         // TODO PP (2020-08-28): erro check
+         // TODO PP (2020-08-28): error check
          return m_fileName((T)item);
       }
 

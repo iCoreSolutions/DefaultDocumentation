@@ -26,7 +26,6 @@ namespace MarkDocGen
             var nsSidebar = new JArray();
             nsSidebar.Add(GetRef(ns));
 
-            // TODO PP (2020-08-28): Ordering
             foreach (var member in ns.Children.OfType<TypeDocItem>().OrderBy(t => t.Name))
             {
                var typeCategory = AddCategory(nsSidebar, MainTemplate.GetDisplayName(member));

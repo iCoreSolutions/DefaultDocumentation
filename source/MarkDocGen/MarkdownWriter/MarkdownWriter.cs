@@ -321,7 +321,6 @@ namespace DefaultDocumentation
             if (m_line.Length > 0)
                FlushLine();
 
-            // TODO PP (2020-08-30): only if in settings
             if (!m_lastLineEmpty)
                FlushLine();
 
@@ -654,7 +653,6 @@ namespace DefaultDocumentation
 
             WriteRaw('|');
 
-            // TODO PP (2020-08-30): optional padding?
             WriteRaw(' ');
 
             m_tableCellPos = m_line.Length;
@@ -718,28 +716,9 @@ namespace DefaultDocumentation
                m_tableColumns[m_tableColumnIndex] = currentColumn.WithWidth(width);
             }
 
-            // TODO PP (2020-08-30): Perhaps optional (FormatTableHeader, FormatTableContent)
             WritePadRight(width);
 
             WriteRaw(' ');
-            // TODO PP (2020-08-30): wtf?
-            //if (_tableRowIndex == 0)
-            //{
-            //   if (Format.TablePadding)
-            //   {
-            //      WriteRaw(" ");
-            //   }
-            //   else if (Format.FormatTableHeader
-            //        && CurrentColumn.Alignment != HorizontalAlignment.Left)
-            //   {
-            //      WriteRaw(" ");
-            //   }
-            //}
-            //else if (Format.TablePadding)
-            //{
-            //   if (width > 0)
-            //      WriteRaw(" ");
-            //}
 
             m_tableCellPos = -1;
             Pop(State.TableCell);
@@ -1032,7 +1011,6 @@ namespace DefaultDocumentation
       {
          if ((ch == '\r' || ch == '\n') && ShouldEscapeNewLine())
          {
-            // TODO PP (2020-08-30): Duplicated CRLF check.
             if (m_line.Length > 0 && m_line[m_line.Length - 1] == '\r')
                m_line.Length = m_line.Length - 1;
 
@@ -1095,7 +1073,6 @@ namespace DefaultDocumentation
                case State.BulletItem:
                   WriteRaw("  ");
                   break;
-               // TODO PP (2020-08-30): implement
                case State.OrderedItem:
                   int count = GetDigitCount(orderedItemNumber) + 2;
                   m_line.Append(' ', count);
@@ -1223,7 +1200,6 @@ namespace DefaultDocumentation
 
             EnsureNewLine();
 
-            // TODO PP (2020-08-30): Optional
             if (!m_lastLineEmpty)
                FlushLine();
 

@@ -5,8 +5,6 @@ namespace DefaultDocumentation.Model
 {
    static class DocItemExtensions
    {
-      // TODO PP (2020-08-25): Change sorting to include parameters maybe?
-
       public static IEnumerable<ConstructorOverloadGroupDocItem> ConstructorOverloads(this TypeDocItem item) => item.Children.OfType<ConstructorOverloadGroupDocItem>();
       public static IEnumerable<ConstructorDocItem> AllConstructors(this TypeDocItem item) => item.ConstructorOverloads().SelectMany(group => group.Constructors).Concat(item.NonOverloadedConstructors());
       public static IEnumerable<ConstructorDocItem> NonOverloadedConstructors(this TypeDocItem item) => item.Children.OfType<ConstructorDocItem>();

@@ -8,7 +8,7 @@ namespace MarkDocGen
 {
    class RenderingContext
    {
-      public RenderingContext(DocGen generator, ITemplate template, DocItem currentItem, IFileNameStrategy fileNameStrategy, ILinkResolver linkResolver, ILogger log)
+      public RenderingContext(DocumentationGenerator generator, ITemplate template, DocItem currentItem, IFileNameStrategy fileNameStrategy, ILinkResolver linkResolver, ILogger log)
       {
          Generator = generator;
          Template = template;
@@ -21,7 +21,7 @@ namespace MarkDocGen
       public ILogger Log { get; }
       public IFileNameStrategy FileNameStrategy { get; }
       public ILinkResolver LinkResolver { get; }
-      public DocGen Generator { get; }
+      public DocumentationGenerator Generator { get; }
       public DocProject Project => CurrentItem?.Project;
 
       public ICompilation Compilation
@@ -39,7 +39,6 @@ namespace MarkDocGen
       
       public ITemplate Template { get; }
 
-      // TODO PP (2020-08-28): Don't linke CurrentItem here... But we need this to resovle type parameters it seems... Maybe enough with current page? (no)
       public DocItem CurrentItem { get; }
       
       public RenderingContext WithItem(DocItem item)

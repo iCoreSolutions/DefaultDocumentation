@@ -150,7 +150,6 @@ namespace MarkDocGen
          ConversionFlags = ConversionFlags.ShowTypeParameterList
       };
 
-      // TODO PP (2020-08-28): wtf is a DisplayName anyway?
       public override string GetDisplayName(DocItem item)
       {
          switch (item)
@@ -375,9 +374,6 @@ namespace MarkDocGen
       {
          WriteHeader(context, item, writer);
 
-         // TODO PP (2020-08-24): Add anchor... perhaps WriteTitle method?
-         //RenderAnchorTitle($"{item.Name} {item.Property.SymbolKind}", item.AnchorId, writer);
-
          RenderSummary(context, item, writer);
 
          RenderAnchorTitle(GetDisplayName(item), item.AnchorId, writer);
@@ -524,9 +520,6 @@ namespace MarkDocGen
       private void RenderEnum(RenderingContext context, EnumDocItem item, MarkdownWriter writer)
       {
          WriteHeader(context, item, writer);
-         // TODO PP (2020-08-31): Remove commented code.
-         //WriteSectionHeading
-         //writer.WriteLine($"## {GetDisplayName(item)} Enum");
 
          RenderSummary(context, item, writer);
 
@@ -609,7 +602,7 @@ namespace MarkDocGen
          if (item.Type.Kind == TypeKind.Class)
          {
             writer.Write("Inheritance ");
-            // TODO PP (2020-08-31): RenderLink
+
             foreach (var type in item.Type.GetNonInterfaceBaseTypes().Where(t => t != item.Type).AsSmart())
             {
                if (!type.IsFirst)
@@ -627,7 +620,7 @@ namespace MarkDocGen
          if (derived.Count > 0)
          {
             writer.EnsureNewLine();
-            // TODO PP (2020-08-31): Handle entity chars!
+
             writer.WriteLine("Derived  ");
             writer.WriteRaw("&#8627;");
             foreach (var type in derived.AsSmart())
@@ -668,8 +661,6 @@ namespace MarkDocGen
             RenderMemberTable(context, "Constructors", item.AllConstructors().OrderBy(method => method.Parameters.Count()), writer);
          }
 
-         // TODO PP (2020-08-26): Remarks here maybe?
-
          RenderMemberTable(context, "Fields", item.Fields, writer);
 
          RenderMemberTable(context, "Properties", item.AllProperties(), writer);
@@ -677,6 +668,10 @@ namespace MarkDocGen
          RenderMemberTable(context, "Methods", item.AllMethods(), writer);
 
          RenderMemberTable(context, "Operators", item.AllOperators(), writer);
+
+         RenderExample(context, item, writer);
+
+         RenderRemarks(context, item, writer);
 
          RenderSeeAlsos(context, item, writer);
       }
@@ -711,25 +706,6 @@ namespace MarkDocGen
             writer.WriteEndTable();
          }
       }
-
-      //private void RenderTable(RenderingContext context, IEnumerable<(ILinkModel Link, string Summary)> items, MarkdownWriter writer)
-      //{
-      //   // TODO PP (2020-08-31): implement
-      //   if (items != null && items.Any())
-      //   {
-      //      writer.WriteLine("|Name|Description|");
-      //      writer.WriteLine("|---|---|");
-      //      foreach (var item in items)
-      //      {
-      //         writer.Write('|');
-      //         writer.Write(RenderLink(context, item.Link));
-      //         writer.Write('|');
-      //         writer.Write(item.Summary?.Trim().Replace("\r\n", "<br/>").Replace("\n", "<br/>"));
-      //         writer.WriteLine("|");
-      //      }
-
-      //   }
-      //}
 
       public void RenderLink(RenderingContext context, ILinkModel link, MarkdownWriter writer)
       {

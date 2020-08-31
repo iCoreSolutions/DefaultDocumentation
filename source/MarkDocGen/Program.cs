@@ -18,6 +18,7 @@ using System.Xml.Linq;
 
 namespace MarkDocGen
 {
+   // TODO PP (2020-08-25): Handle compiler generated members, and accessibility configuration (i.e. only export public members etc)
    class Options
    {
       [Value(0, MetaName = "<input files>", HelpText = "The assemblies to process", Required = true)]
@@ -85,7 +86,7 @@ namespace MarkDocGen
          IFileNameStrategy fileNameStrategy = DefaultFileNameStrategy.Instance;
 
          DocusaurusTemplate template = new DocusaurusTemplate(fileNameStrategy);
-         DocGen generator = new DocGen(DefaultFileNameStrategy.Instance, resolver, msLog);
+         DocumentationGenerator generator = new DocumentationGenerator(DefaultFileNameStrategy.Instance, resolver, msLog);
 
          generator.Generate(project, template, opts.OutputDirectory);
 
