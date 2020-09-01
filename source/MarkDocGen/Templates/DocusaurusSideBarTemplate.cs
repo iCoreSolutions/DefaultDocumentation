@@ -45,6 +45,20 @@ namespace MarkDocGen
                         propertyCategory.Add(GetRef(field));
                   }
 
+                  if (member.Delegates.Any())
+                  {
+                     var propertyCategory = AddCategory(typeCategory, "Delegates");
+                     foreach (var field in member.Delegates.OrderBy(p => MainTemplate.GetDisplayName(p)))
+                        propertyCategory.Add(GetRef(field));
+                  }
+
+                  if (member.Events.Any())
+                  {
+                     var propertyCategory = AddCategory(typeCategory, "Events");
+                     foreach (var field in member.Events.OrderBy(p => MainTemplate.GetDisplayName(p)))
+                        propertyCategory.Add(GetRef(field));
+                  }
+
                   if (member.AllProperties().Any())
                   {
                      var propertyCategory = AddCategory(typeCategory, "Properties");

@@ -44,6 +44,9 @@ namespace DefaultDocumentation.Model
 
       public virtual IEnumerable<FieldDocItem> Fields => Children.OfType<FieldDocItem>().OrderBy(item => item.Name);
 
+      public virtual IEnumerable<EventDocItem> Events => Children.OfType<EventDocItem>().OrderBy(item => item.Name);
+
+      public virtual IEnumerable<DelegateDocItem> Delegates => Children.OfType<DelegateDocItem>().OrderBy(item => item.Name);
 
    }
 }

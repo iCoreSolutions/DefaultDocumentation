@@ -303,10 +303,10 @@ namespace MarkDocGen
       {
          WriteHeader(context, item, writer);
 
-         if (item is ConstructorOverloadGroupDocItem)
-            WriteSectionHeading($"## {Escape(GetDisplayName(item.Parent))} Constructors", writer);
-         else
-            WriteSectionHeading($"## {Escape(GetDisplayName(item.Parent))}.{item.Members.First().Name} Method", writer);
+         //if (item is ConstructorOverloadGroupDocItem)
+         //   WriteSectionHeading($"{Escape(GetDisplayName(item.Parent))} Constructors", writer);
+         //else
+         //   WriteSectionHeading($"{Escape(GetDisplayName(item.Parent))}.{item.Members.First().Name} Method", writer);
 
          // Render summary
          RenderSummary(context, item, writer);
@@ -512,7 +512,7 @@ namespace MarkDocGen
                RenderLink(context, context.ResolveCrefLink(exception.GetReferenceName()), writer);
                writer.WriteLine("  "); // line break               
                RenderXmlDoc(context, exception, writer);
-               writer.WriteLine();
+               writer.EnsureNewParagraph();
             }
          }
       }
@@ -554,6 +554,8 @@ namespace MarkDocGen
             writer.WriteEndTableRow();
          }
 
+         writer.WriteEndTable();
+
          RenderExample(context, item, writer);
 
          RenderRemarks(context, item, writer);
@@ -589,7 +591,7 @@ namespace MarkDocGen
 
       private void RenderInheritance(RenderingContext context, TypeDocItem item, MarkdownWriter writer)
       {
-         if (item.Type.Kind == TypeKind.Class)
+         if (item.Type.Kind == TypeKind.Class || item.Type.Kind == TypeKind.Enum)
          {
             writer.Write("Inheritance ");
 
@@ -636,7 +638,7 @@ namespace MarkDocGen
             writer.Write(BaseTypeAmbience.ConvertType(@interface));
          }
          writer.WriteEndCodeBlock();
-
+         
          RenderInheritance(context, item, writer);
 
          List<TypeDocItem> derived = context.CurrentItem.Project.Items.OfType<TypeDocItem>().Where(i => i.Type.DirectBaseTypes.Select(t => t is ParameterizedType g ? g.GetDefinition() : t).Contains(item.Type)).OrderBy(i => i.Type.FullName).ToList();
@@ -679,12 +681,13 @@ namespace MarkDocGen
          }
 
          if (item.AllConstructors().Any())
-         {
-            writer.WriteLine();
+         {            
             RenderMemberTable(context, "Constructors", item.AllConstructors().OrderBy(method => method.Parameters.Count()), writer);
          }
 
          RenderMemberTable(context, "Fields", item.Fields, writer);
+
+         RenderMemberTable(context, "Delegates", item.Delegates, writer);
 
          RenderMemberTable(context, "Properties", item.AllProperties(), writer);
 
@@ -692,6 +695,8 @@ namespace MarkDocGen
 
          RenderMemberTable(context, "Operators", item.AllOperators(), writer);
 
+         RenderMemberTable(context, "Events", item.Events, writer);
+         
          RenderExample(context, item, writer);
 
          RenderRemarks(context, item, writer);
@@ -801,7 +806,7 @@ namespace MarkDocGen
       public MarkdownXmlDocWriter(MarkdownWriter writer, Action<RenderingContext, ILinkModel, MarkdownWriter> renderLink)
       {
          m_writer = writer;
-         this.m_renderLink = renderLink;
+         m_renderLink = renderLink;
       }
 
       public void WriteCodeBlock(RenderingContext context, string value, string language)
@@ -809,9 +814,42 @@ namespace MarkDocGen
          m_writer.WriteCodeBlock(value, language);
       }
 
+      public void WriteEndList(ListType type)
+      {
+      }
+
+      public void WriteEndListItem(ListType type)
+      {
+         if (type == ListType.Bullet)
+            m_writer.WriteEndBulletItem();
+         else
+            m_writer.WriteEndOrderedListItem();
+      }
+
       public void WriteEndParagraph()
       {
          m_writer.WriteEndParagraph();
+      }
+
+      public void WriteEndTable()
+      {
+         m_writer.WriteEndTable();
+      }
+
+      public void WriteEndTableCell()
+      {
+         m_writer.WriteEndTableCell();
+      }
+
+      public void WriteEndTableHeader()
+      {
+         m_writer.WriteEndTableRow();
+         m_writer.WriteTableHeaderSeparator();
+      }
+
+      public void WriteEndTableRow()
+      {
+         m_writer.WriteEndTableRow();
       }
 
       public void WriteInlineCode(RenderingContext context, string content)
@@ -824,9 +862,31 @@ namespace MarkDocGen
          m_renderLink(context, link, m_writer);
       }
 
+      public void WriteListItemTerm(string value)
+      {
+         m_writer.WriteBold(value);
+      }
+
+      public void WriteParamRef(RenderingContext context, string name)
+      {
+         m_writer.WriteInlineCode(name);
+      }
+
       public void WriteStartCodeBlock(string language)
       {
          m_writer.WriteStartCodeBlock(language);
+      }
+
+      public void WriteStartList(ListType type)
+      {
+      }
+
+      public void WriteStartListItem(int itemNumber, ListType type)
+      {
+         if (type == ListType.Bullet)
+            m_writer.WriteStartBulletItem();
+         else
+            m_writer.WriteStartOrderedListItem(itemNumber);
       }
 
       public void WriteStartParagraph()
@@ -834,9 +894,34 @@ namespace MarkDocGen
          m_writer.WriteStartParagraph();
       }
 
+      public void WriteStartTable(int columnCount)
+      {
+         m_writer.WriteStartTable(columnCount);
+      }
+
+      public void WriteStartTableCell()
+      {
+         m_writer.WriteStartTableCell();
+      }
+
+      public void WriteStartTableHeader()
+      {
+         m_writer.WriteStartTableRow();
+      }
+
+      public void WriteStartTableRow()
+      {
+         m_writer.WriteStartTableRow();
+      }
+
       public void WriteText(RenderingContext context, string text)
       {
          m_writer.Write(text);
+      }
+
+      public void WriteTypeParamRef(RenderingContext context, string value)
+      {
+         m_writer.WriteInlineCode(value);
       }
    }
 }

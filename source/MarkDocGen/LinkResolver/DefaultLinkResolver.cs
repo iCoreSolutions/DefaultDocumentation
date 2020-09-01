@@ -162,6 +162,8 @@ namespace MarkDocGen
             if (item is ITypeParameterizedDocItem typeParameters)
             {
                typeParameterDocItem = Array.Find(typeParameters.TypeParameters, i => i.TypeParameter.Name == name);
+               if (typeParameterDocItem != null)
+                  return true;
             }
 
             item = item.Parent;

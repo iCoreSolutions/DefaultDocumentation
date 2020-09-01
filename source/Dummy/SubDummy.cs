@@ -4,6 +4,13 @@ using System.Collections.Generic;
 namespace Dummy.SubDummy.SomeNamespace
 {
    /// <summary>
+   /// This is a delegate
+   /// </summary>
+   /// <param name="a">parameter a</param>
+   /// <param name="b">parameter b</param>
+   public delegate void MyDelegate1(int a, int b);
+
+   /// <summary>
    /// This is my sub enum. Real nice.
    /// </summary>
    /// <remarks>
@@ -33,19 +40,136 @@ namespace Dummy.SubDummy.SomeNamespace
    /// <para>This is the remarks for the <see cref="SubDummy{T}"/> class.</para>
    /// <para>It contains some paragraphs, with a small <c>code</c> tag.</para>
    /// <para>And finally one last paragraph, with a <see cref="IEnumerable{T}"/> (see) and also a <see langword="false"/>.</para>
+   /// <para>And the type parameter <typeparamref name="T"/> is also here.</para>
    /// </remarks>
    /// <seealso cref="SubDummy{T}.SubDummy(Tuple{int, string})"/>
    class SubDummy<T> : DummyClass.DummyNested<T>
    {
+      /// <summary>
+      /// This is a delegate
+      /// </summary>
+      /// <param name="a">parameter a</param>
+      /// <param name="b">parameter b</param>
+      /// <remarks>
+      /// <para>This is the remarks, with a bullet list:
+      /// <list type="bullet">
+      /// <item>
+      ///   <description>This is item 1</description>
+      /// </item>
+      /// <item>
+      ///   <description>This is item 2</description>
+      /// </item>
+      /// <item>
+      ///   <description>This is item 3</description>
+      /// </item>
+      /// </list>
+      /// </para>
+      /// <para>
+      /// And here we go witha  <c>Number</c> list:
+      /// <list type="number">
+      /// <item>
+      ///   <description>This is item 1</description>
+      /// </item>
+      /// <item>
+      ///   <description>This is item 2</description>
+      /// </item>
+      /// <item>
+      ///   <description>This is item 3</description>
+      /// </item>
+      /// </list>
+      /// </para>
+      /// 
+      /// <para>
+      /// Here's a table:
+      /// /// <list type="table">
+      /// <listheader>
+      /// <term>Action</term>
+      /// <term>Description</term>
+      /// <term>Power Consumption</term>
+      /// </listheader>
+      /// <item>
+      /// <term>Forward</term>
+      /// <term>Move forwards in a straight line.</term>
+      /// <term>50W</term>
+      /// </item>
+      /// <item>
+      /// <term>Backward</term>
+      /// <term>Move backwards in a straight line.</term>
+      /// <term>50W</term>
+      /// </item>
+      /// <item>
+      /// <term>RotateLeft</term>
+      /// <term>Rotate to the left.</term>
+      /// <term>30W</term>
+      /// </item>
+      /// <item>
+      /// <term>RotateRight</term>
+      /// <term>Rotate to the right.</term>
+      /// <term>30W</term>
+      /// </item>
+      /// <item>
+      /// <term>Dig</term>
+      /// <term>Tells the robot to dig and obtain a soil sample.</term>
+      /// <term>800W</term>
+      /// </item>
+      /// </list>
+      /// </para>      
+      /// 
+      /// <para>
+      /// A definition list:
+      /// <list type="number">
+      /// <item>
+      /// <term>Forward</term>
+      /// <description>Move forwards in a straight line.</description>
+      /// </item>
+      /// <item>
+      /// <term>Backward</term>
+      /// <description>Move backwards in a straight line.</description>
+      /// </item>
+      /// <item>
+      /// <term>RotateLeft</term>
+      /// <description>Rotate to the left.</description>
+      /// </item>
+      /// <item>
+      /// <term>RotateRight</term>
+      /// <description>Rotate to the right.</description>
+      /// </item>
+      /// <item>
+      /// <term>Dig</term>
+      /// <description>Tells the robot to dig and obtain a soil sample.</description>
+      /// </item>
+      /// </list>
+      /// </para>
+      /// </remarks>
+      public delegate void MyDelegate1(int a, int b);
+
+      /// <summary>
+      /// The default constructor.
+      /// </summary>
+      /// <remarks>
+      /// We can have a type parameter <typeparamref name="T"/>.
+      /// </remarks>
       public SubDummy()
       {
       }
 
+      /// <summary>
+      /// This is the normal tuple ctor.
+      /// </summary>
+      /// <param name="tupleProp"></param>
       public SubDummy(Tuple<int, string> tupleProp)
       {
          TupleProp = tupleProp;
       }
 
+      /// <summary>
+      /// This is a strange ctor.
+      /// </summary>
+      /// <param name="valueTupleProp">The value</param>
+      /// <param name="tupleProp">Something</param>
+      /// <remarks>
+      /// We can have a type parameter <typeparamref name="T"/> and also a parameter <paramref name="tupleProp"/>.
+      /// </remarks>
       public SubDummy((int Apa, string Bepa) valueTupleProp, Tuple<int, string> tupleProp)
       {
          ValueTupleProp = valueTupleProp;
@@ -68,8 +192,7 @@ namespace Dummy.SubDummy.SomeNamespace
       /// </summary>
       /// <example>      
       /// This example illustrates accessing this method.
-      /// <code>
-      /// SubDummy&lt;int&gt; a = new SumDummy&lt;int&gt;();
+      /// <code>SubDummy&lt;int&gt; a = new SumDummy&lt;int&gt;();
       /// a.Method1(3);
       /// </code>
       /// </example>

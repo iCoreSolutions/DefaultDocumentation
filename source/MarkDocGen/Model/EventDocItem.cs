@@ -26,5 +26,8 @@ namespace DefaultDocumentation.Model
       }
 
       public override DocItemKind Kind => DocItemKind.Event;
+
+      public string Name => Event.Name;
+
    }
 }

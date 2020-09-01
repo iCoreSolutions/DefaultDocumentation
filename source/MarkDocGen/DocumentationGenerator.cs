@@ -47,7 +47,7 @@ namespace MarkDocGen
          }
       }
 
-      public void RenderNodes(RenderingContext context, IEnumerable<XNode> nodes, IXmlDocWriter renderer)
+      public void RenderNodes(RenderingContext context, IEnumerable<XNode> nodes, IXmlDocWriter writer)
       {
          if (nodes == null || !nodes.Any())
             return;
@@ -60,7 +60,7 @@ namespace MarkDocGen
             switch (node)
             {
                case XText text:
-                  renderer.WriteText(context, text.Value);
+                  writer.WriteText(context, text.Value);
                   break;
 
                case XElement el:
@@ -68,70 +68,46 @@ namespace MarkDocGen
                   {
                      // TODO PP (2020-08-31): Add support for support <b>, <i>, <em>, <typeparamref>, <list>
                      case "para":
-                        renderer.WriteStartParagraph();
-                        RenderNodes(context, el.Nodes(), renderer);
-                        renderer.WriteEndParagraph();
+                        writer.WriteStartParagraph();
+                        RenderNodes(context, el.Nodes(), writer);
+                        writer.WriteEndParagraph();
                         break;
 
                      case "see":
                         if (el.Attribute("cref") != null)
                         {
                            var link = context.ResolveCrefLink(el.Attribute("cref").Value, String.IsNullOrWhiteSpace(el.Value) ? null : el.Value);
-                           renderer.WriteLink(context, link);                           
+                           writer.WriteLink(context, link);                           
                         }
                         else if (el.Attribute("langword") != null)
                         {
                            var link = context.ResolveLangWordLink(el.GetLangWord());
-                           renderer.WriteLink(context, link);
+                           writer.WriteLink(context, link);
                         }
                         else
                            throw new NotImplementedException("Logwarning");
                         break;
 
                      case "c":
-                        renderer.WriteInlineCode(context, el.Value);
+                        writer.WriteInlineCode(context, el.Value);
                         break;
 
                      case "code":
-                        renderer.WriteCodeBlock(context, el.Value);
+                        writer.WriteCodeBlock(context, el.Value);
+                        break;
+
+                     case "list":
+                        RenderList(context, el, writer);
+                        break;
+
+                     case "typeparamref":
+                        writer.WriteTypeParamRef(context, el.Attribute("name")?.Value);
                         break;
 
                      case "paramref":
                         var name = el.Attribute("name")?.Value;
                         if (name != null)
-                        {
-                           if (parent is IParameterizedDocItem pdi)
-                           {
-                              var parameter = pdi.Parameters.FirstOrDefault(p => p.Name == name);
-                              if (parameter == null)
-                              {
-                                 Log.LogWarning("Invalid paramref to parameter \"{Name}\" in {CurrentItem}.", name, context.CurrentItem.Id);
-                                 renderer.WriteText(context, name);
-                              }
-                              else
-                              {
-                                 var link = context.ResolveLink(parent, parameter.Name);
-                                 if (link != null)
-                                 {
-                                    // TODO PP (2020-08-31): Perhaps change to RenderParamRef. We don't use anchors for parameters normally.
-                                    renderer.WriteLink(context, link);
-                                 }
-                                 else
-                                 {
-                                    Log.LogWarning("Invalid paramref to parameter \"{Name}\" in {CurrentItem}.", name, context.CurrentItem.Id);
-                                    renderer.WriteText(context, parameter.Name);
-                                 }
-                              }
-                           }
-                           else
-                           {
-                              // TODO PP (2020-08-23): Warning error failure etc... 
-                           }
-                        }
-                        else
-                        {
-                           // TODO PP (2020-08-23): Warning log?
-                        }
+                           writer.WriteParamRef(context, name);                        
                         break;
                      default:
                         Log.LogWarning("Unsupported XML element <{ElementName}> in {CurrentItem}.", el.Name.LocalName, context.CurrentItem.Id);
@@ -173,6 +149,121 @@ namespace MarkDocGen
             }
 
          }
+      }
+
+      //private T FindParent<T>(DocItem item) 
+      //{
+      //   var current = item;
+
+      //   while (current != null)
+      //   {
+      //      if (current is T typedItem)
+      //         return typedItem;
+
+      //      current = current.Parent;
+      //   }
+
+      //   return null;
+      //}
+
+      private void RenderList(RenderingContext context, XElement el, IXmlDocWriter writer)
+      {
+         const string TYPE_BULLET = "bullet";
+         const string TYPE_NUMBER = "number";
+         const string TYPE_TABLE = "table";
+
+         var type = el.Attribute("type")?.Value ?? "bullet";
+
+         var listHeaderEl = el.Element("listheader");
+
+         if (listHeaderEl != null && type != TYPE_TABLE)
+            Log.LogWarning("<listheader> is not supporteed in a list type other than \"{Table}\" at {Item}", TYPE_TABLE, context.CurrentItem.Id);
+
+         var itemEls = el.Elements("item");
+
+         switch (type)
+         {
+            case TYPE_BULLET:
+               RenderList(context, itemEls, ListType.Bullet, writer);
+               break;
+            case TYPE_NUMBER:
+               RenderList(context, itemEls, ListType.Number, writer);
+               break;
+            case TYPE_TABLE:
+               RenderTable(context, listHeaderEl, itemEls, writer);
+               break;
+            default:
+               Log.LogWarning("Unsupported list type {Type} at {Item}", type, context.CurrentItem.Id);
+               break;
+         }
+      }
+
+      private void RenderTable(RenderingContext context, XElement listHeaderEl, IEnumerable<XElement> itemEls, IXmlDocWriter writer)
+      {
+         if (listHeaderEl == null)
+         {            
+            Log.LogWarning("<list> of type \"table\" without a <listheader> is not supported at {Item}", context.CurrentItem.Id);          
+         }
+
+         int columnCount = Math.Max(listHeaderEl.Elements("term").Count(), itemEls.Max(e => e.Elements("term").Count()));
+
+         writer.WriteStartTable(columnCount);
+         if (listHeaderEl != null)
+         {
+            writer.WriteStartTableHeader();
+            foreach (var header in listHeaderEl.Elements("term"))
+            {
+               writer.WriteStartTableCell();
+               writer.WriteText(context, header.Value);
+               writer.WriteEndTableCell();
+            }
+            writer.WriteEndTableHeader();
+         }
+
+         foreach (var row in itemEls)
+         {
+            writer.WriteStartTableRow();
+            foreach (var column in row.Elements("term"))
+            {
+               writer.WriteStartTableCell();
+               RenderNodes(context, column.Nodes(), writer);
+               writer.WriteEndTableCell();
+            }
+            writer.WriteEndTableRow();
+         }
+
+         writer.WriteEndTable();
+      }
+
+      private void RenderList(RenderingContext context, IEnumerable<XElement> itemEls, ListType listType, IXmlDocWriter writer)
+      {
+         writer.WriteStartList(listType);
+         int itemNumber = 1;
+         foreach (var item in itemEls)
+         {
+            var term = item.Element("term");
+            var description = item.Element("description");
+            if (description == null)
+            {
+               Log.LogWarning("Missing <description> in list defined at {Item}", context.CurrentItem.Id);
+            }
+
+            writer.WriteStartListItem(itemNumber++, listType);
+            if (term != null && !term.IsEmpty)
+            {
+               writer.WriteListItemTerm(term.Value);
+               if (description != null)
+                  writer.WriteText(context, " - ");
+            }
+
+            if (description != null)
+            {
+               RenderNodes(context, description.Nodes(), writer);
+            }
+            writer.WriteEndListItem(listType);
+         }
+
+         writer.WriteEndList(listType);
       }
    }
 }

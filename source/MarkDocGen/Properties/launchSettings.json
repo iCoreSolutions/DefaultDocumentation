@@ -2,7 +2,7 @@
   "profiles": {
     "MarkDocGen": {
       "commandName": "Project",
-      "commandLineArgs": "-o \"F:\\WIP\\d\\docs\\iCoreCodedApi\" f:\\etwork\\bin\\icore.public.types.dll f:\\etwork\\bin\\icore.public.entities.dll --sidebar-link-prefix \"iCoreCodedApi\""
+      "commandLineArgs": "-o \"F:\\WIP\\d\\docs\\iCoreCodedApi\" D:\\Git\\DefaultDocumentation\\source\\Dummy\\bin\\Debug\\netstandard2.0\\Dummy.dll --sidebar-link-prefix \"iCoreCodedApi\""
     }
   }
 }

@@ -1026,6 +1026,9 @@ namespace DefaultDocumentation
          }
          else
          {
+            if (m_state != State.CodeBlock && m_isWhitespaceOnly)
+               m_line.Length = 0;
+
             if (m_line.Length == 0)
                WriteIndentation();
 
