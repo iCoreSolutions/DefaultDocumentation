@@ -66,7 +66,19 @@ namespace MarkDocGen
                case XElement el:
                   switch (el.Name.LocalName)
                   {
-                     // TODO PP (2020-08-31): Add support for support <b>, <i>, <em>, <typeparamref>, <list>
+                     case "b":
+                        writer.WriteStartBold();
+                        RenderNodes(context, el.Nodes(), writer);
+                        writer.WriteEndBold();
+                        break;
+
+                     case "i":
+                     case "em":
+                        writer.WriteStartItalic();
+                        RenderNodes(context, el.Nodes(), writer);
+                        writer.WriteEndItalic();
+                        break;
+
                      case "para":
                         writer.WriteStartParagraph();
                         RenderNodes(context, el.Nodes(), writer);

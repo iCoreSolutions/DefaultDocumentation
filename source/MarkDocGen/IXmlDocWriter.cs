@@ -25,6 +25,10 @@
       void WriteEndTable();
       void WriteTypeParamRef(RenderingContext context, string value);
       void WriteParamRef(RenderingContext context, string name);
+      void WriteEndItalic();
+      void WriteStartItalic();
+      void WriteEndBold();
+      void WriteStartBold();
    }
 
    public enum ListType

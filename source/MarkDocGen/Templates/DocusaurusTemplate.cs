@@ -10,7 +10,9 @@ using DefaultDocumentation.Model;
 using ICSharpCode.Decompiler.CSharp.OutputVisitor;
 using ICSharpCode.Decompiler.Output;
 using ICSharpCode.Decompiler.TypeSystem;
+using Microsoft.Extensions.Logging;
 using Pluralize.NET;
+using Serilog;
 
 namespace MarkDocGen
 {
@@ -467,14 +469,15 @@ namespace MarkDocGen
       {
          if (item != null && item.Parameters.Any())
          {
-            writer.WriteHeading3("Parameters");
+            WriteSectionHeading("Parameters", writer);
 
-            // TODO PP (2020-08-24): We should probably warn here if a parameter is missing. So should loop on the actual parameters of the method instead perhaps?
             foreach (var parameter in item.Parameters)
             {
+               writer.EnsureNewParagraph();
                writer.WriteInlineCode(parameter.Name);
                writer.Write(" ");
                RenderLink(context, context.ResolveTypeLink(parameter.Parameter.Type), writer);
+               writer.Write("  "); // Line break
                XElement parameterElement = parameter.Documentation;
                if (parameterElement != null)
                {
@@ -483,7 +486,7 @@ namespace MarkDocGen
                }
                else
                {
-                  // TODO PP (2020-08-24): Log warning.
+                  context.Log.LogWarning("Missing documentation for parameter {Name} in {Item}.", parameter.Name, ((DocItem)item).Id);
                }
             }
          }
@@ -814,6 +817,16 @@ namespace MarkDocGen
          m_writer.WriteCodeBlock(value, language);
       }
 
+      public void WriteEndBold()
+      {
+         m_writer.WriteEndBold();
+      }
+
+      public void WriteEndItalic()
+      {
+         m_writer.WriteEndItalic();
+      }
+
       public void WriteEndList(ListType type)
       {
       }
@@ -872,9 +885,19 @@ namespace MarkDocGen
          m_writer.WriteInlineCode(name);
       }
 
+      public void WriteStartBold()
+      {
+         m_writer.WriteStartBold();
+      }
+
       public void WriteStartCodeBlock(string language)
       {
          m_writer.WriteStartCodeBlock(language);
+      }
+
+      public void WriteStartItalic()
+      {
+         m_writer.WriteStartItalic();
       }
 
       public void WriteStartList(ListType type)
