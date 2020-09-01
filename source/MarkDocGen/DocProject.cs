@@ -3,6 +3,7 @@ using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.CSharp.OutputVisitor;
 using ICSharpCode.Decompiler.Documentation;
+using ICSharpCode.Decompiler.IL;
 using ICSharpCode.Decompiler.Output;
 using ICSharpCode.Decompiler.TypeSystem;
 using Microsoft.Extensions.Logging;
@@ -92,56 +93,59 @@ namespace MarkDocGen
                _ => throw new NotSupportedException()
             };
 
-            foreach (var group in type.Methods.Cast<IEntity>().Concat(type.Properties).Where(m => m.Accessibility == Accessibility.Public).GroupBy(m => m.Name))
+            if (typeDocItem.Kind != DocItemKind.Enum && typeDocItem.Kind != DocItemKind.Delegate)
             {
-               if (group.Count() == 1)
+               foreach (var group in type.Methods.Cast<IEntity>().Concat(type.Properties).Where(m => m.Accessibility == Accessibility.Public).GroupBy(m => m.Name))
                {
-                  var entity = group.First();
-                  // TODO PP (2020-08-25): warn if doc missing for visible member, and add filter
-                  TryGetDocumentation(entity, out var doc);
-                  var methodItem = CreateItem(doc, typeDocItem, entity);
-                  showType = true;
-                  _docItems.Add(methodItem);
-               }
-               else
-               {
-                  OverloadGroupDocItem groupDocItem;
-
-                  // TODO PP (2020-08-25): Add parsing of overload documentation.
-
-                  IEntity firstItem = group.First();
-                  if (firstItem is IMethod method)
+                  if (group.Count() == 1)
                   {
-                     if (method.IsConstructor)
-                        groupDocItem = new ConstructorOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
-                     else if (method.IsOperator)
-                        groupDocItem = new OperatorOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
-                     else
-                        groupDocItem = new MethodOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
-                  }
-                  else if (firstItem is IProperty property)
-                  {
-                     groupDocItem = new PropertyOverloadGroupDocItem(typeDocItem, property.FullName, firstItem.Name, XElement.Parse("<doc />"));
+                     var entity = group.First();
+                     // TODO PP (2020-08-25): warn if doc missing for visible member, and add filter
+                     TryGetDocumentation(entity, out var doc);
+                     var methodItem = CreateItem(doc, typeDocItem, entity);
+                     showType = true;
+                     _docItems.Add(methodItem);
                   }
                   else
                   {
-                     throw new InvalidOperationException($"Internal error; Unsupported overloaded member of type {firstItem.GetType().Name}");
+                     OverloadGroupDocItem groupDocItem;
+
+                     // TODO PP (2020-08-25): Add parsing of overload documentation.
+
+                     IEntity firstItem = group.First();
+                     if (firstItem is IMethod method)
+                     {
+                        if (method.IsConstructor)
+                           groupDocItem = new ConstructorOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
+                        else if (method.IsOperator)
+                           groupDocItem = new OperatorOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
+                        else
+                           groupDocItem = new MethodOverloadGroupDocItem(typeDocItem, method.FullName, group.First().Name, XElement.Parse("<doc />"));
+                     }
+                     else if (firstItem is IProperty property)
+                     {
+                        groupDocItem = new PropertyOverloadGroupDocItem(typeDocItem, property.FullName, firstItem.Name, XElement.Parse("<doc />"));
+                     }
+                     else
+                     {
+                        throw new InvalidOperationException($"Internal error; Unsupported overloaded member of type {firstItem.GetType().Name}");
+                     }
+
+                     List<DocItem> members = new List<DocItem>();
+                     foreach (var entity in group)
+                     {
+                        // TODO PP (2020-08-25): warn if doc missing for visible member, and add filter
+                        TryGetDocumentation(entity, out documentation);
+                        showType = true;
+                        var item = CreateItem(documentation, groupDocItem, entity);
+
+                        members.Add(item);
+                     }
+
+                     _docItems.Add(groupDocItem);
+                     foreach (var member in members)
+                        _docItems.Add(member);
                   }
-
-                  List <DocItem> members = new List<DocItem>();
-                  foreach (var entity in group)
-                  {
-                     // TODO PP (2020-08-25): warn if doc missing for visible member, and add filter
-                     TryGetDocumentation(entity, out documentation);
-                     showType = true;
-                     var item = CreateItem(documentation, groupDocItem, entity);
-
-                     members.Add(item);
-                  }
-
-                  _docItems.Add(groupDocItem);                  
-                  foreach (var member in members)
-                     _docItems.Add(member);
                }
             }
 

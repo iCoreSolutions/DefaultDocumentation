@@ -25,46 +25,52 @@ namespace MarkDocGen
          {
             var nsSidebar = new JArray();
             nsSidebar.Add(GetRef(ns));
-
+                        
             foreach (var member in ns.Children.OfType<TypeDocItem>().OrderBy(t => t.Name))
             {
-               var typeCategory = AddCategory(nsSidebar, MainTemplate.GetDisplayName(member));
-               typeCategory.Add(GetRef(member));
-
-               if (member.AllConstructors().Any())
+               if (member.Kind != DocItemKind.Enum && member.Kind != DocItemKind.Delegate)
                {
-                  typeCategory.Add(GetRef(member.ConstructorOverloads().Any() ? (DocItem)member.ConstructorOverloads().First() : member.AllConstructors().Single()));
-               }
+                  var typeCategory = AddCategory(nsSidebar, MainTemplate.GetDisplayName(member));
+                  typeCategory.Add(GetRef(member));
 
-               if (member.Fields.Any())
-               {
-                  var propertyCategory = AddCategory(typeCategory, "Fields");
-                  foreach (var field in member.Fields.OrderBy(p => MainTemplate.GetDisplayName(p)))
-                     propertyCategory.Add(GetRef(field));
-               }
+                  if (member.AllConstructors().Any())
+                  {
+                     typeCategory.Add(GetRef(member.ConstructorOverloads().Any() ? (DocItem)member.ConstructorOverloads().First() : member.AllConstructors().Single()));
+                  }
 
-               if (member.AllProperties().Any())
-               {
-                  var propertyCategory = AddCategory(typeCategory, "Properties");
-                  foreach (var property in member.NonOverloadedProperties().Cast<DocItem>().Concat(member.PropertyOverloads()).OrderBy(p => MainTemplate.GetDisplayName(p)))
-                     propertyCategory.Add(GetRef(property));
-               }
+                  if (member.Fields.Any())
+                  {
+                     var propertyCategory = AddCategory(typeCategory, "Fields");
+                     foreach (var field in member.Fields.OrderBy(p => MainTemplate.GetDisplayName(p)))
+                        propertyCategory.Add(GetRef(field));
+                  }
 
-               if (member.AllMethods().Any())
-               {
-                  var methodCategory = AddCategory(typeCategory, "Methods");
-                  foreach (var method in member.NonOverloadedMethods().Cast<DocItem>().Concat(member.MethodOverloads()).OrderBy(p => MainTemplate.GetDisplayName(p)))
-                     methodCategory.Add(GetRef(method));
-               }
+                  if (member.AllProperties().Any())
+                  {
+                     var propertyCategory = AddCategory(typeCategory, "Properties");
+                     foreach (var property in member.NonOverloadedProperties().Cast<DocItem>().Concat(member.PropertyOverloads()).OrderBy(p => MainTemplate.GetDisplayName(p)))
+                        propertyCategory.Add(GetRef(property));
+                  }
 
-               if (member.AllOperators().Any())
-               {
-                  var methodCategory = AddCategory(typeCategory, "Operators");
-                  foreach (var method in member.NonOverloadedOperators().Cast<DocItem>().Concat(member.OperatorOverloads()).OrderBy(p => MainTemplate.GetDisplayName(p)))
-                     methodCategory.Add(GetRef(method));
+                  if (member.AllMethods().Any())
+                  {
+                     var methodCategory = AddCategory(typeCategory, "Methods");
+                     foreach (var method in member.NonOverloadedMethods().Cast<DocItem>().Concat(member.MethodOverloads()).OrderBy(p => MainTemplate.GetDisplayName(p)))
+                        methodCategory.Add(GetRef(method));
+                  }
+
+                  if (member.AllOperators().Any())
+                  {
+                     var methodCategory = AddCategory(typeCategory, "Operators");
+                     foreach (var method in member.NonOverloadedOperators().Cast<DocItem>().Concat(member.OperatorOverloads()).OrderBy(p => MainTemplate.GetDisplayName(p)))
+                        methodCategory.Add(GetRef(method));
+                  }
                }
-               //foreach (var 
-               //nsSidebar.Add(GetRef(member));
+               else
+               {
+                  nsSidebar.Add(GetRef(member));
+
+               }
             }
             o.Add(new JProperty(ns.AnchorId, nsSidebar));
          }

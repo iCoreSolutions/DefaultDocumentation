@@ -30,9 +30,9 @@ namespace MarkDocGen
          AddRenderer(new MarkdownPageRenderer<PropertyDocItem>(RenderProperty, GetFileName, item => !item.IsOverloaded));
          AddRenderer(new MarkdownPageRenderer<PropertyOverloadGroupDocItem>(RenderProperties, GetFileName));
          AddRenderer(new MarkdownPageRenderer<NamespaceDocItem>(RenderNamespace, GetFileName));
-         AddRenderer(new MarkdownPageRenderer<FieldDocItem>(RenderField, GetFileName));
+         AddRenderer(new MarkdownPageRenderer<FieldDocItem>(RenderField, GetFileName, item => item.Kind != DocItemKind.EnumField));
          AddRenderer(new MarkdownPageRenderer<HomeDocItem>(RenderHomePage, _ => "index.md"));
-         
+
       }
 
       private string GetFileName(DocItem item)
@@ -57,10 +57,10 @@ namespace MarkDocGen
             NamespaceDocItem namespaceItem => $"{GetDisplayName(namespaceItem)} Namespace",
             EntityDocItem entityItem => $"{GetDisplayName(item)} {entityItem.Entity.SymbolKind}",
             _ => GetDisplayName(item)
-         };         
+         };
       }
 
-      
+
       private void RenderHomePage(RenderingContext context, HomeDocItem hdi, MarkdownWriter writer)
       {
          foreach (var ns in hdi.AllNamespaces())
@@ -70,7 +70,7 @@ namespace MarkDocGen
             writer.WriteEndBulletItem();
          }
       }
-      
+
       private string GetSidebarLabel(DocItem item)
       {
          return item switch
@@ -169,8 +169,8 @@ namespace MarkDocGen
             case NamespaceDocItem ns:
                return ns.Name;
             case AssemblyDocItem asm:
-               return asm.Module.AssemblyName + ".dll";               
-            
+               return asm.Module.AssemblyName + ".dll";
+
             case OverloadGroupDocItem ogd:
                // TODO PP (2020-08-28): Incorrect... this will contain the parameter for methods. Need just the simple name here. Introduce name property on items again?
                return GetDisplayName(ogd.Children.First());
@@ -182,8 +182,8 @@ namespace MarkDocGen
          }
 
       }
-      
-      
+
+
       static XElement Trim(XElement element)
       {
          static void TrimMe(XElement element)
@@ -275,7 +275,7 @@ namespace MarkDocGen
             return;
 
          MarkdownXmlDocWriter xmlWriter = new MarkdownXmlDocWriter(writer, (r, l, w) => RenderLink(r, l, w));
-         context.Generator.RenderNodes(context, Trim(element).Nodes(), xmlWriter);         
+         context.Generator.RenderNodes(context, Trim(element).Nodes(), xmlWriter);
 
       }
 
@@ -329,7 +329,7 @@ namespace MarkDocGen
          WriteSectionHeading("Overloads", writer);
 
          RenderMemberTable(context, "Overloads", item.Properties, writer);
-         
+
          foreach (var property in item.Properties)
          {
             RenderProperty(context, property, writer);
@@ -394,11 +394,11 @@ namespace MarkDocGen
 
          RenderSeeAlsos(context, item, writer);
       }
-      
+
       private void RenderField(RenderingContext context, FieldDocItem item, MarkdownWriter writer)
       {
          WriteHeader(context, item, writer);
-         
+
          //RenderAnchorTitle($"{item.Name} {item.Field.SymbolKind}", item.AnchorId, writer);
 
          RenderSummary(context, item, writer);
@@ -437,7 +437,7 @@ namespace MarkDocGen
          if (elements != null && elements.Any())
          {
             WriteSectionHeading("See also", writer);
-            
+
             foreach (var element in elements)
             {
                writer.WriteStartBulletItem();
@@ -504,7 +504,7 @@ namespace MarkDocGen
          var exceptionsElements = item.Documentation?.GetExceptions();
          if (exceptionsElements != null && exceptionsElements.Any())
          {
-            WriteSectionHeading("Exceptions", writer);            
+            WriteSectionHeading("Exceptions", writer);
 
             foreach (var exception in exceptionsElements)
             {
@@ -521,19 +521,37 @@ namespace MarkDocGen
       {
          WriteHeader(context, item, writer);
 
+         RenderAssemblyAndNamespaceInfo(context, item, writer);
+
          RenderSummary(context, item, writer);
 
          writer.WriteStartCodeBlock("csharp");
          writer.Write(CodeAmbience.ConvertSymbol(item.Type));
          IType enumType = item.Type.GetEnumUnderlyingType();
          writer.WriteLine(enumType.IsKnownType(KnownTypeCode.Int32) ? string.Empty : $" : {enumType.FullName}");
-         writer.WriteEndCodeBlock();         
+         writer.WriteEndCodeBlock();
 
-         // attribute
+         RenderInheritance(context, item, writer);
+
+         WriteSectionHeading("Fields", writer);
+
+         writer.WriteStartTable(3);
+         writer.WriteStartTableRow();
+         writer.WriteTableCell("Name");
+         writer.WriteTableCell("Value");
+         writer.WriteTableCell("Description");
+         writer.WriteEndTableRow();
+         writer.WriteTableHeaderSeparator();
+
          foreach (var field in item.Fields)
          {
-            writer.WriteLine($"* ***TODO - NOT YET IMPLEMENTED***  {field.FieldValue}");
-            // TODO PP (2020-08-26): Implement rendering of table.
+            writer.WriteStartTableRow();
+            writer.WriteTableCell(field.Name);
+            writer.WriteTableCell(field.Field.GetConstantValue()?.ToString());
+            writer.WriteStartTableCell();
+            RenderXmlDoc(context, field.Documentation?.GetSummary(), writer);            
+            writer.WriteEndTableCell();
+            writer.WriteEndTableRow();
          }
 
          RenderExample(context, item, writer);
@@ -544,7 +562,7 @@ namespace MarkDocGen
       }
 
       private void RenderAssemblyAndNamespaceInfo(RenderingContext context, DocItem item, MarkdownWriter writer)
-      {         
+      {
          var namespaceItem = item.ContainingNamespace();
          var assemblyItem = item.ContainingAssembly();
 
@@ -569,17 +587,37 @@ namespace MarkDocGen
          writer.WriteEndParagraph();
       }
 
+      private void RenderInheritance(RenderingContext context, TypeDocItem item, MarkdownWriter writer)
+      {
+         if (item.Type.Kind == TypeKind.Class)
+         {
+            writer.Write("Inheritance ");
+
+            foreach (var type in item.Type.GetNonInterfaceBaseTypes().Where(t => t != item.Type).AsSmart())
+            {
+               if (!type.IsFirst)
+                  writer.WriteRaw(" &#129106; ");
+
+               RenderLink(context, context.ResolveTypeLink(type.Value), writer);
+            }
+
+            writer.WriteRaw(" &#129106; ");
+            writer.Write(item.Name);
+            writer.WriteLine("  ");
+         }
+
+      }
       private void RenderType(RenderingContext context, TypeDocItem item, MarkdownWriter writer)
       {
          WriteHeader(context, item, writer);
-         
+
          if (!this.GeneratesPage(item))
             RenderAnchorTitle($"{item.Name} {item.Type.Kind}", item.AnchorId, writer);
 
          RenderAssemblyAndNamespaceInfo(context, item, writer);
 
          RenderSummary(context, item, writer);
-         
+
          List<IType> interfaces = item.Type.DirectBaseTypes.Where(t => t.Kind == TypeKind.Interface && t.GetDefinition().Accessibility == Accessibility.Public).ToList();
 
          writer.WriteStartCodeBlock();
@@ -599,22 +637,7 @@ namespace MarkDocGen
          }
          writer.WriteEndCodeBlock();
 
-         if (item.Type.Kind == TypeKind.Class)
-         {
-            writer.Write("Inheritance ");
-
-            foreach (var type in item.Type.GetNonInterfaceBaseTypes().Where(t => t != item.Type).AsSmart())
-            {
-               if (!type.IsFirst)
-                  writer.WriteRaw(" &#129106; ");
-
-               RenderLink(context, context.ResolveTypeLink(type.Value), writer);
-            }
-
-            writer.WriteRaw(" &#129106; ");
-            writer.Write(item.Name);
-            writer.WriteLine("  ");
-         }
+         RenderInheritance(context, item, writer);
 
          List<TypeDocItem> derived = context.CurrentItem.Project.Items.OfType<TypeDocItem>().Where(i => i.Type.DirectBaseTypes.Select(t => t is ParameterizedType g ? g.GetDefinition() : t).Contains(item.Type)).OrderBy(i => i.Type.FullName).ToList();
          if (derived.Count > 0)
@@ -633,7 +656,7 @@ namespace MarkDocGen
 
                RenderLink(context, context.ResolveLink(type.Value), writer);
             }
-            writer.WriteLine("  ");            
+            writer.WriteLine("  ");
          }
 
          // attribute
@@ -683,12 +706,8 @@ namespace MarkDocGen
             WriteSectionHeading(title, writer);
             writer.WriteStartTable(2);
             writer.WriteStartTableRow();
-            writer.WriteStartTableCell();
-            writer.Write("Name");
-            writer.WriteEndTableCell();
-            writer.WriteStartTableCell();
-            writer.Write("Description");
-            writer.WriteEndTableCell();
+            writer.WriteTableCell("Name");
+            writer.WriteTableCell("Description");
             writer.WriteEndTableRow();
             writer.WriteTableHeaderSeparator();
 

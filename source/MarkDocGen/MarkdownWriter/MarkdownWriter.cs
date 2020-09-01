@@ -643,6 +643,13 @@ namespace DefaultDocumentation
          WriteStartTable(columns, columns.Count);
       }
 
+      public void WriteTableCell(string content)
+      {
+         WriteStartTableCell();
+         Write(content);
+         WriteEndTableCell();
+      }
+
       public void WriteStartTableCell()
       {
          try
