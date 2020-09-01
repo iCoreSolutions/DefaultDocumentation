@@ -7,7 +7,7 @@ using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
-   internal sealed class PropertyDocItem : MemberDocItem, IParameterizedDocItem
+   internal sealed class PropertyDocItem : MemberDocItem, IParameterizedDocItem, IReturnTypeDocItem
    {
       public PropertyDocItem(DocItem parent, IProperty property, XElement documentation)
          : base(parent, property, documentation)
@@ -24,6 +24,8 @@ namespace DefaultDocumentation.Model
       public override DocItemKind Kind => DocItemKind.Property;
 
       public string Name => Property.Name;
+
+      public IType ReturnType => Property?.ReturnType;
 
       public bool IsOverloaded => Parent is OverloadGroupDocItem;
    }

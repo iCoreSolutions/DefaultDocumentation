@@ -7,26 +7,11 @@ using MarkDocGen;
 
 namespace DefaultDocumentation.Model
 {
-   internal sealed class DelegateDocItem : TypeDocItem, IParameterizedDocItem
+   internal sealed class DelegateDocItem : TypeDocItem, IParameterizedDocItem, IReturnTypeDocItem
    {
       public IMethod InvokeMethod { get; }
 
-      private static readonly CSharpAmbience CodeAmbience = new CSharpAmbience
-      {
-         ConversionFlags =
-              ConversionFlags.ShowAccessibility
-              | ConversionFlags.ShowBody
-              | ConversionFlags.ShowDeclaringType
-              | ConversionFlags.ShowDefinitionKeyword
-              | ConversionFlags.ShowModifiers
-              | ConversionFlags.ShowParameterList
-              | ConversionFlags.ShowParameterModifiers
-              | ConversionFlags.ShowParameterNames
-              | ConversionFlags.ShowReturnType
-              | ConversionFlags.ShowTypeParameterList
-              | ConversionFlags.ShowTypeParameterVarianceModifier
-              | ConversionFlags.UseFullyQualifiedTypeNames
-      };
+      public IType ReturnType => InvokeMethod?.ReturnType;
 
       public override DocItemKind Kind => DocItemKind.Delegate;
 

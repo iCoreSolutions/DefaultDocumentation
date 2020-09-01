@@ -335,6 +335,14 @@
             <param name="a">parameter a</param>
             <param name="b">parameter b</param>
         </member>
+        <member name="T:Dummy.SubDummy.SomeNamespace.SubDummyFactory`1">
+            <summary>
+            Factory for SubDummy
+            </summary>
+            <typeparam name="T">A type argument</typeparam>
+            <param name="name">Some name</param>
+            <returns>A new subdummy!?</returns>
+        </member>
         <member name="T:Dummy.SubDummy.SomeNamespace.MySubEnum">
             <summary>
             This is my sub enum. Real nice.

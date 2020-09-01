@@ -18,6 +18,7 @@ namespace DefaultDocumentation.Model
 
       public override DocItemKind Kind => DocItemKind.TypeParameter;
 
+      public string Name => TypeParameter.Name;
       //public override bool GeneratePage => false;
 
       //public override void WriteDocumentation(DocumentationWriter writer)

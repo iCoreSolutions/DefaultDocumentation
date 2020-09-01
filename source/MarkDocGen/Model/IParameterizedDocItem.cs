@@ -1,6 +1,6 @@
 ﻿namespace DefaultDocumentation.Model
 {
-    internal interface IParameterizedDocItem
+   internal interface IParameterizedDocItem : IDocItem
     {
         ParameterDocItem[] Parameters { get; }
     }

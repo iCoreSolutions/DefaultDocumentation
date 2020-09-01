@@ -5,7 +5,7 @@ using ICSharpCode.Decompiler.TypeSystem;
 
 namespace DefaultDocumentation.Model
 {
-   internal abstract class MethodBaseDocItem : MemberDocItem, IParameterizedDocItem
+   internal abstract class MethodBaseDocItem : MemberDocItem, IParameterizedDocItem, IReturnTypeDocItem
    {
       public MethodBaseDocItem(DocItem parent, IMethod method, XElement documentation)
          : base(parent, method, documentation)
@@ -17,6 +17,8 @@ namespace DefaultDocumentation.Model
       public string Name => Method.Name;
       public bool IsOverloaded => Parent is OverloadGroupDocItem;
       public IMethod Method { get; }
-      public ParameterDocItem[] Parameters { get; }
+      public IType ReturnType => Method?.ReturnType;
+
+      public ParameterDocItem[] Parameters { get; }      
    }
 }

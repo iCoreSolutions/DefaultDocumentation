@@ -26,7 +26,8 @@ namespace MarkDocGen
          m_fileNameStrategy = fns ?? throw new ArgumentNullException(nameof(fns), $"{nameof(fns)} is null.");
 
          AddRenderer(new MarkdownPageRenderer<EnumDocItem>(RenderEnum, GetFileName));
-         AddRenderer(new MarkdownPageRenderer<TypeDocItem>(RenderType, GetFileName, item => item.Kind != DocItemKind.Enum));
+         AddRenderer(new MarkdownPageRenderer<DelegateDocItem>(RenderDelegate, GetFileName));
+         AddRenderer(new MarkdownPageRenderer<TypeDocItem>(RenderType, GetFileName, item => item.Kind != DocItemKind.Enum && item.Kind != DocItemKind.Delegate));
          AddRenderer(new MarkdownPageRenderer<MethodBaseOverloadGroupDocItem>(RenderMethods, GetFileName));
          AddRenderer(new MarkdownPageRenderer<MethodBaseDocItem>(RenderMethod, GetFileName, item => !item.IsOverloaded));
          AddRenderer(new MarkdownPageRenderer<PropertyDocItem>(RenderProperty, GetFileName, item => !item.IsOverloaded));
@@ -61,7 +62,6 @@ namespace MarkDocGen
             _ => GetDisplayName(item)
          };
       }
-
 
       private void RenderHomePage(RenderingContext context, HomeDocItem hdi, MarkdownWriter writer)
       {
@@ -145,6 +145,23 @@ namespace MarkDocGen
         ConversionFlags.ShowParameterList
         | ConversionFlags.ShowTypeParameterList
         | ConversionFlags.UseFullyQualifiedTypeNames
+      };
+
+      private static readonly CSharpAmbience DelegateCodeAmbience = new CSharpAmbience
+      {
+         ConversionFlags =
+           ConversionFlags.ShowAccessibility
+           | ConversionFlags.ShowBody
+           | ConversionFlags.ShowDeclaringType
+           | ConversionFlags.ShowDefinitionKeyword
+           | ConversionFlags.ShowModifiers
+           | ConversionFlags.ShowParameterList
+           | ConversionFlags.ShowParameterModifiers
+           | ConversionFlags.ShowParameterNames
+           | ConversionFlags.ShowReturnType
+           | ConversionFlags.ShowTypeParameterList
+           | ConversionFlags.ShowTypeParameterVarianceModifier
+           | ConversionFlags.UseFullyQualifiedTypeNames
       };
 
       private static readonly CSharpAmbience BaseTypeAmbience = new CSharpAmbience
@@ -359,6 +376,8 @@ namespace MarkDocGen
 
          writer.WriteCodeBlock(MethodCodeAmbience.ConvertSymbol(item.Method), "csharp");
 
+         RenderTypeParameters(context, item as ITypeParameterizedDocItem, writer);
+
          RenderParameters(context, item, writer);
 
          RenderReturns(context, item, writer);
@@ -449,12 +468,12 @@ namespace MarkDocGen
          }
       }
 
-      private void RenderReturns(RenderingContext context, MethodBaseDocItem item, MarkdownWriter writer)
+      private void RenderReturns(RenderingContext context, IReturnTypeDocItem item, MarkdownWriter writer)
       {
-         if (item.Entity is IMember member && member.ReturnType != null && member.ReturnType.Kind != TypeKind.Void)
+         if (item.ReturnType != null && item.ReturnType.Kind != TypeKind.Void)
          {
             WriteSectionHeading("Returns", writer);
-            RenderLink(context, context.ResolveTypeLink(member.ReturnType), writer);
+            RenderLink(context, context.ResolveTypeLink(item.ReturnType), writer);
             writer.WriteLine("  "); // line break
             RenderXmlDoc(context, item.Documentation?.GetReturns(), writer);
          }
@@ -463,6 +482,31 @@ namespace MarkDocGen
       private void WriteSectionHeading(string heading, MarkdownWriter writer)
       {
          writer.WriteHeading3(heading);
+      }
+
+      private void RenderTypeParameters(RenderingContext context, ITypeParameterizedDocItem item, MarkdownWriter writer)
+      {
+         if (item != null && item.TypeParameters.Any())
+         {
+            WriteSectionHeading("Type Parameters", writer);
+
+            foreach (var typeParam in item.TypeParameters)
+            {
+               writer.EnsureNewParagraph();
+               writer.WriteInlineCode(typeParam.Name);
+               writer.Write("  "); // Line break
+               XElement parameterElement = typeParam.Documentation;
+               if (parameterElement != null)
+               {
+                  writer.EnsureNewLine();
+                  RenderXmlDoc(context, parameterElement, writer);
+               }
+               else
+               {
+                  context.Log.LogWarning("Missing documentation for type parameter {Name} in {Item}.", typeParam.Name, ((DocItem)item).Id);
+               }
+            }
+         }
       }
 
       private void RenderParameters(RenderingContext context, IParameterizedDocItem item, MarkdownWriter writer)
@@ -552,7 +596,7 @@ namespace MarkDocGen
             writer.WriteTableCell(field.Name);
             writer.WriteTableCell(field.Field.GetConstantValue()?.ToString());
             writer.WriteStartTableCell();
-            RenderXmlDoc(context, field.Documentation?.GetSummary(), writer);            
+            RenderXmlDoc(context, field.Documentation?.GetSummary(), writer);
             writer.WriteEndTableCell();
             writer.WriteEndTableRow();
          }
@@ -612,6 +656,7 @@ namespace MarkDocGen
          }
 
       }
+
       private void RenderType(RenderingContext context, TypeDocItem item, MarkdownWriter writer)
       {
          WriteHeader(context, item, writer);
@@ -641,7 +686,7 @@ namespace MarkDocGen
             writer.Write(BaseTypeAmbience.ConvertType(@interface));
          }
          writer.WriteEndCodeBlock();
-         
+
          RenderInheritance(context, item, writer);
 
          List<TypeDocItem> derived = context.CurrentItem.Project.Items.OfType<TypeDocItem>().Where(i => i.Type.DirectBaseTypes.Select(t => t is ParameterizedType g ? g.GetDefinition() : t).Contains(item.Type)).OrderBy(i => i.Type.FullName).ToList();
@@ -684,7 +729,7 @@ namespace MarkDocGen
          }
 
          if (item.AllConstructors().Any())
-         {            
+         {
             RenderMemberTable(context, "Constructors", item.AllConstructors().OrderBy(method => method.Parameters.Count()), writer);
          }
 
@@ -699,13 +744,38 @@ namespace MarkDocGen
          RenderMemberTable(context, "Operators", item.AllOperators(), writer);
 
          RenderMemberTable(context, "Events", item.Events, writer);
-         
+
          RenderExample(context, item, writer);
 
          RenderRemarks(context, item, writer);
 
          RenderSeeAlsos(context, item, writer);
       }
+
+      private void RenderDelegate(RenderingContext context, DelegateDocItem item, MarkdownWriter writer)
+      {
+         WriteHeader(context, item, writer);
+
+         RenderAssemblyAndNamespaceInfo(context, item, writer);
+
+         RenderSummary(context, item, writer);
+
+         string content = DelegateCodeAmbience.ConvertSymbol(item.Type);
+         writer.WriteCodeBlock(content, "csharp");
+
+         RenderTypeParameters(context, item, writer);
+
+         RenderParameters(context, item, writer);
+
+         RenderReturns(context, item, writer);
+
+         RenderExample(context, item, writer);
+
+         RenderRemarks(context, item, writer);
+
+         RenderSeeAlsos(context, item, writer);
+      }
+
 
       private void RenderMemberTable(RenderingContext context, string title, IEnumerable<DocItem> items, MarkdownWriter writer)
       {
@@ -733,6 +803,8 @@ namespace MarkDocGen
             writer.WriteEndTable();
          }
       }
+
+      #region Links
 
       public void RenderLink(RenderingContext context, ILinkModel link, MarkdownWriter writer)
       {
@@ -765,15 +837,6 @@ namespace MarkDocGen
          writer.WriteLink(link.Text, link.Url);
       }
 
-      private string Escape(string text)
-      {
-         return text
-            .Replace("<", "&lt;")
-            .Replace(">", "&gt;")
-            .Replace("*", "\\*")
-            .Replace("_", "\\_");
-      }
-
       private string RenderTypeLink(RenderingContext context, TypeLinkModel link, MarkdownWriter writer)
       {
          StringBuilder builder = new StringBuilder();
@@ -799,152 +862,6 @@ namespace MarkDocGen
          return builder.ToString();
       }
 
-   }
-
-   class MarkdownXmlDocWriter : IXmlDocWriter
-   {
-      private readonly MarkdownWriter m_writer;
-      private readonly Action<RenderingContext, ILinkModel, MarkdownWriter> m_renderLink;
-
-      public MarkdownXmlDocWriter(MarkdownWriter writer, Action<RenderingContext, ILinkModel, MarkdownWriter> renderLink)
-      {
-         m_writer = writer;
-         m_renderLink = renderLink;
-      }
-
-      public void WriteCodeBlock(RenderingContext context, string value, string language)
-      {
-         m_writer.WriteCodeBlock(value, language);
-      }
-
-      public void WriteEndBold()
-      {
-         m_writer.WriteEndBold();
-      }
-
-      public void WriteEndItalic()
-      {
-         m_writer.WriteEndItalic();
-      }
-
-      public void WriteEndList(ListType type)
-      {
-      }
-
-      public void WriteEndListItem(ListType type)
-      {
-         if (type == ListType.Bullet)
-            m_writer.WriteEndBulletItem();
-         else
-            m_writer.WriteEndOrderedListItem();
-      }
-
-      public void WriteEndParagraph()
-      {
-         m_writer.WriteEndParagraph();
-      }
-
-      public void WriteEndTable()
-      {
-         m_writer.WriteEndTable();
-      }
-
-      public void WriteEndTableCell()
-      {
-         m_writer.WriteEndTableCell();
-      }
-
-      public void WriteEndTableHeader()
-      {
-         m_writer.WriteEndTableRow();
-         m_writer.WriteTableHeaderSeparator();
-      }
-
-      public void WriteEndTableRow()
-      {
-         m_writer.WriteEndTableRow();
-      }
-
-      public void WriteInlineCode(RenderingContext context, string content)
-      {
-         m_writer.WriteInlineCode(content);
-      }
-
-      public void WriteLink(RenderingContext context, ILinkModel link)
-      {
-         m_renderLink(context, link, m_writer);
-      }
-
-      public void WriteListItemTerm(string value)
-      {
-         m_writer.WriteBold(value);
-      }
-
-      public void WriteParamRef(RenderingContext context, string name)
-      {
-         m_writer.WriteInlineCode(name);
-      }
-
-      public void WriteStartBold()
-      {
-         m_writer.WriteStartBold();
-      }
-
-      public void WriteStartCodeBlock(string language)
-      {
-         m_writer.WriteStartCodeBlock(language);
-      }
-
-      public void WriteStartItalic()
-      {
-         m_writer.WriteStartItalic();
-      }
-
-      public void WriteStartList(ListType type)
-      {
-      }
-
-      public void WriteStartListItem(int itemNumber, ListType type)
-      {
-         if (type == ListType.Bullet)
-            m_writer.WriteStartBulletItem();
-         else
-            m_writer.WriteStartOrderedListItem(itemNumber);
-      }
-
-      public void WriteStartParagraph()
-      {
-         m_writer.WriteStartParagraph();
-      }
-
-      public void WriteStartTable(int columnCount)
-      {
-         m_writer.WriteStartTable(columnCount);
-      }
-
-      public void WriteStartTableCell()
-      {
-         m_writer.WriteStartTableCell();
-      }
-
-      public void WriteStartTableHeader()
-      {
-         m_writer.WriteStartTableRow();
-      }
-
-      public void WriteStartTableRow()
-      {
-         m_writer.WriteStartTableRow();
-      }
-
-      public void WriteText(RenderingContext context, string text)
-      {
-         m_writer.Write(text);
-      }
-
-      public void WriteTypeParamRef(RenderingContext context, string value)
-      {
-         m_writer.WriteInlineCode(value);
-      }
+      #endregion
    }
 }

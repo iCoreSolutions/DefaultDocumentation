@@ -11,6 +11,14 @@ namespace Dummy.SubDummy.SomeNamespace
    public delegate void MyDelegate1(int a, int b);
 
    /// <summary>
+   /// Factory for SubDummy
+   /// </summary>
+   /// <typeparam name="T">A type argument</typeparam>
+   /// <param name="name">Some name</param>
+   /// <returns>A new subdummy!?</returns>
+   public delegate SubDummy<T> SubDummyFactory<T>(string name);
+
+   /// <summary>
    /// This is my sub enum. Real nice.
    /// </summary>
    /// <remarks>
@@ -43,7 +51,7 @@ namespace Dummy.SubDummy.SomeNamespace
    /// <para>And the type parameter <typeparamref name="T"/> is also here.</para>
    /// </remarks>
    /// <seealso cref="SubDummy{T}.SubDummy(Tuple{int, string})"/>
-   class SubDummy<T> : DummyClass.DummyNested<T>
+   public class SubDummy<T> : DummyClass.DummyNested<T>
    {
       /// <summary>
       /// This is a delegate
@@ -143,6 +151,7 @@ namespace Dummy.SubDummy.SomeNamespace
       /// </remarks>
       public delegate void MyDelegate1(int a, int b);
 
+      
       /// <summary>
       /// The default constructor.
       /// </summary>
