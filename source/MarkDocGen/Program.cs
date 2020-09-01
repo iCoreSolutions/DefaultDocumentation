@@ -6,7 +6,11 @@ using ICSharpCode.Decompiler.Output;
 using ICSharpCode.Decompiler.TypeSystem;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Configuration;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Serilog.Formatting.Display;
+using Serilog.Sinks.SystemConsole.Themes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +33,20 @@ namespace MarkDocGen
       
       [Option("sidebar-link-prefix", HelpText = "An optional prefix to add in front of all links placed in the Sidebar.json file.", Required = false)]
       public string SideBarLinkPrefix { get; set; }
+
+      [Option('v', "verbosity", HelpText = "The logging verbosity. One of Detailed, Normal, Warning, Error", Required = false, Default = Verbosity.Normal)]
+      public Verbosity Verbosity { get; set; } = Verbosity.Normal;
    }
+
+   public enum Verbosity
+   {
+      Detailed,
+      Normal,
+      Warning,
+      Error
+   }
+
+
 
    class Program
    {
@@ -37,13 +54,38 @@ namespace MarkDocGen
       {       
       }
 
+      private static LogEventLevel ToLogLevel(Verbosity verbosity)
+      {
+         switch (verbosity)
+         {
+            case Verbosity.Detailed:
+               return LogEventLevel.Verbose;
+            case Verbosity.Warning:
+               return LogEventLevel.Warning;               
+            case Verbosity.Error:
+               return LogEventLevel.Error;
+            case Verbosity.Normal:
+            default:
+               return LogEventLevel.Information;
+         }
+      }
+
+
       static void Run(Options opts)
       {
-         // TODO PP (2020-08-31): Modify logger format to be easily parseable by build environment, i.e. lines starting with "Error:", "Warning:" etc.
          var logger = new LoggerConfiguration()
-            .WriteTo.Console().MinimumLevel.Is(Serilog.Events.LogEventLevel.Information).CreateLogger();
-
+            .WriteTo.Logger(lc => lc
+               .WriteTo.Console(outputTemplate: "{Level:u}: {Message:lj}{NewLine}{Exception}")
+               .MinimumLevel.Warning())               
+            .WriteTo.Logger(lc => lc.WriteTo
+               .Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
+               .Filter.ByExcluding(evt => evt.Level >= LogEventLevel.Warning)
+               .MinimumLevel.Debug())
+            .MinimumLevel.Is(ToLogLevel(opts.Verbosity))            
+            .CreateLogger();
+         
          Microsoft.Extensions.Logging.ILogger msLog = new SerilogLoggerProvider(logger).CreateLogger("log");
+
          DocProject project = new DocProject(msLog);
 
          msLog.LogInformation("Using output directory {Directory}", opts.OutputDirectory);
@@ -73,7 +115,7 @@ namespace MarkDocGen
 
          if (Directory.Exists(opts.OutputDirectory))
          {
-            msLog.LogInformation("Cleaning output directory \"{Directory}\".", opts.OutputDirectory);
+            msLog.LogDebug("Cleaning output directory \"{Directory}\".", opts.OutputDirectory);
             Empty(new DirectoryInfo(opts.OutputDirectory));
          }
          else
@@ -95,8 +137,16 @@ namespace MarkDocGen
       }
 
       static void Main(string[] args)
-      {
-         var parser = Parser.Default;
+      {         
+         var parser = new Parser(s =>
+         {
+            s.AutoHelp = true;
+            s.AutoVersion = true;
+            s.CaseInsensitiveEnumValues = true;
+            s.CaseSensitive = false;
+            s.EnableDashDash = true;
+            s.HelpWriter = Console.Out;            
+         });
          var res = parser.ParseArguments<Options>(args)
             .WithParsed(Run)
             .WithNotParsed(HandleParseError);

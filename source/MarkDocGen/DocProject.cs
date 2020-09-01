@@ -32,14 +32,17 @@ namespace MarkDocGen
 
       private readonly DocItemCollection _docItems = new DocItemCollection();
       private readonly HomeDocItem _homeItem;
-      public DocProject(ILogger logger)
+      public DocProject(ILogger logger, DocProjectOptions options = null)
       {
          Log = logger ?? NullLogger.Instance;
+         Options = options ?? DocProjectOptions.Default;
          _homeItem = new HomeDocItem(this, "Home", "Home", null);
          _docItems.Add(_homeItem);
       }
 
       public ILogger Log { get; }
+
+      public DocProjectOptions Options { get; }
 
       public IEnumerable<AssemblyDocItem> Assemblies => _docItems.OfType<AssemblyDocItem>();
 
@@ -69,6 +72,12 @@ namespace MarkDocGen
 
          foreach (ITypeDefinition type in _decompiler.TypeSystem.MainModule.TypeDefinitions.Where(t => t.Name != "NamespaceDoc" && t.Name != "AssemblyDoc"))
          {
+            if (!Options.IncludeCompilerGeneratedTypes && IsCompilerGenerated(type))
+               continue;
+
+            if (type.Accessibility != Accessibility.Public)
+               continue;
+            
             bool showType = TryGetDocumentation(type, out XElement documentation);
             bool newNamespace = false;
 
@@ -95,8 +104,10 @@ namespace MarkDocGen
 
             if (typeDocItem.Kind != DocItemKind.Enum && typeDocItem.Kind != DocItemKind.Delegate)
             {
-               foreach (var group in type.Methods.Cast<IEntity>().Concat(type.Properties).Where(m => m.Accessibility == Accessibility.Public).GroupBy(m => m.Name))
+               foreach (var group in type.Methods.Cast<IEntity>().Concat(type.Properties).Where(m => 
+                  (Options.IncludeCompilerGeneratedTypes || !IsCompilerGenerated(m)) && m.Accessibility == Accessibility.Public).GroupBy(m => m.Name))
                {
+                  
                   if (group.Count() == 1)
                   {
                      var entity = group.First();
@@ -189,6 +200,11 @@ namespace MarkDocGen
                _ => throw new NotSupportedException()
             };
          }
+      }
+
+      private bool IsCompilerGenerated(IEntity type)
+      {
+         return type.GetAttributes().Any(attr => attr.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
       }
 
       internal IEnumerable<DocItem> GetChildren(DocItem docItem)

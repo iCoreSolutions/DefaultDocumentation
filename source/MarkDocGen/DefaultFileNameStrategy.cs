@@ -30,7 +30,8 @@ namespace MarkDocGen
           ["<"] = "_",
           [">"] = "_",
           ["#"] = "_",
-          ["`"] = "_",          
+          ["`"] = "_",
+          ["+"] = "_",
        };
 
       public string GetFileName(DocItem item, string extension)
